@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RitMEX Kaito 项目报告</title>
+    <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-100-M/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ffffff;
+            --secondary: #f8f9fa;
+            --accent: #007bff;
+            --text: #212529;
+            --border: #dee2e6;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            color: var(--text);
+            background-color: var(--secondary);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 15px;
+        }
+        
+        .report-card {
+            background-color: var(--primary);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--primary);
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .date {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+        
+        .project-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 1rem;
+        }
+        
+        .project-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .project-funding {
+            font-size: 0.875rem;
+            background-color: #e7f1ff;
+            color: var(--accent);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .project-desc {
+            margin-bottom: 1rem;
+            font-size: 0.9375rem;
+            color: var(--text);
+        }
+        
+        .project-link {
+            display: inline-flex;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--accent);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .project-link i {
+            margin-right: 0.5rem;
+        }
+        
+        .project-link:hover {
+            color: #0056b3;
+        }
+        
+        .footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .ritmex-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .ritmex-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .project-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .title {
+                font-size: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .project-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .project-funding {
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="report-card">
+            <div class="header">
+                <div class="date">2025年6月18日</div>
+                <h1 class="title">RitMEX Kaito 项目报告</h1>
+                <div class="subtitle">精选区块链项目融资与参与指南</div>
+            </div>
+            
+            <div class="project-grid">
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Infinex</div>
+                        <div class="project-funding">$65.29M</div>
+                    </div>
+                    <div class="project-desc">
+                        从DEX转型为跨链智能合约钱包，内置跨链桥功能。UI设计精良，目前有零成本参与活动。
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Humanity Protocol</div>
+                        <div class="project-funding">$50M</div>
+                    </div>
+                    <div class="project-desc">
+                        防女巫攻击基础设施，估值最高的新项目之一。确认有空投，可参与测试网活动。
+                    </div>
+                    <a href="https://testnet.humanity.org/login?ref=discountry" class="project-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>测试网活动链接
+                    </a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Camp Network</div>
+                        <div class="project-funding">$29M</div>
+                    </div>
+                    <div class="project-desc">
+                        新公链项目，预算充足。测试网活动竞争激烈，仅奖励前50名参与者。
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Noya.ai</div>
+                        <div class="project-funding">未知</div>
+                    </div>
+                    <div class="project-desc">
+                        全链收益聚合器，目前处于早期阶段，最大资金池TVL不足5万美元。
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Hana Network</div>
+                        <div class="project-funding">$2M</div>
+                    </div>
+                    <div class="project-desc">
+                        币安孵化的基于Cosmos二次开发的区块链，官网设计精美，产品尚未发布。
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Goat Network</div>
+                        <div class="project-funding">$5M</div>
+                    </div>
+                    <div class="project-desc">
+                        OKX领投的比特币L2解决方案，有官方积分活动，但需使用BTC作为gas费。
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Mira</div>
+                        <div class="project-funding">$850K</div>
+                    </div>
+                    <div class="project-desc">
+                        由Coinbase前CTO等知名人士支持的去中心化AI基础设施。提供AI聊天Demo可零成本参与。
+                    </div>
+                    <a href="https://klokapp.ai?referral_code=ZTZ2H33M" class="project-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>参与链接
+                    </a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Multipli</div>
+                        <div class="project-funding">未知</div>
+                    </div>
+                    <div class="project-desc">
+                        DeFi收益聚合器，总TVL达7000万美元。提供稳定币和其他代币的收益策略。
+                    </div>
+                    <a href="https://app.multipli.fi?referral_code=WAEXN" class="project-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>参与链接
+                    </a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Sunrise</div>
+                        <div class="project-funding">$2M</div>
+                    </div>
+                    <div class="project-desc">
+                        类似TIA的DA层项目，刚刚启动，文档尚未完善，可关注后续进展。
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Openledger</div>
+                        <div class="project-funding">$8M</div>
+                    </div>
+                    <div class="project-desc">
+                        AI公链项目，可参与测试网零成本活动。
+                    </div>
+                    <a href="https://testnet.openledger.xyz/?referral_code=nis45zgfdy" class="project-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>测试网活动链接
+                    </a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Theoriq</div>
+                        <div class="project-funding">$10.2M</div>
+                    </div>
+                    <div class="project-desc">
+                        Hashkey领投的AI链项目，可参与测试网活动。
+                    </div>
+                    <a href="https://quests.theoriq.ai?r=Mhx75qrA" class="project-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>测试网活动链接
+                    </a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Soul</div>
+                        <div class="project-funding">未知</div>
+                    </div>
+                    <div class="project-desc">
+                        跨链借贷协议，官网设计极具科技感，可使用测试网代币参与零成本活动。
+                    </div>
+                    <a href="https://app.soul.io?referredBy=KCW1P" class="project-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>参与链接
+                    </a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Somnia Network</div>
+                        <div class="project-funding">未知</div>
+                    </div>
+                    <div class="project-desc">
+                        EVM兼容链，提供官方任务平台和免费测试网代币发放。
+                    </div>
+                    <a href="https://quest.somnia.network/referrals/0CC8D74E" class="project-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>零成本活动链接
+                    </a>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Novastro Chain</div>
+                        <div class="project-funding">$1.2M</div>
+                    </div>
+                    <div class="project-desc">
+                        测试网活动始于2024年7月，预计即将发币，官网支持中文。
+                    </div>
+                </div>
+                
+                <div class="project-card">
+                    <div class="project-header">
+                        <div class="project-name">Newton</div>
+                        <div class="project-funding">未知</div>
+                    </div>
+                    <div class="project-desc">
+                        跨链钱包项目，提供定投AI机器人功能，积分活动已开始但大部分处于关闭状态。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>本报告由 <a href="https://ritmex.one" class="ritmex-link" target="_blank">RitMEX</a> 研究团队编制</p>
+                <p>© 2025 RitMEX. 保留所有权利。</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
