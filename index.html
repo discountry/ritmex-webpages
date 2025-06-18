@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RitMEX Research</title>
+    <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-100-M/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ffffff;
+            --secondary: #f8f9fa;
+            --accent: #007bff;
+            --text: #212529;
+            --border: #dee2e6;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            color: var(--text);
+            background-color: var(--secondary);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 15px;
+        }
+        
+        .research-card {
+            background-color: var(--primary);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--primary);
+        }
+        
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .subtitle {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .date {
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .report-list {
+            padding: 2rem;
+        }
+        
+        .report-item {
+            display: flex;
+            align-items: center;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: var(--text);
+        }
+        
+        .report-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent);
+        }
+        
+        .report-icon {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-right: 1.25rem;
+            min-width: 40px;
+            text-align: center;
+        }
+        
+        .report-content {
+            flex: 1;
+        }
+        
+        .report-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--accent);
+        }
+        
+        .report-subtitle {
+            font-size: 0.9375rem;
+            color: #6c757d;
+        }
+        
+        .report-arrow {
+            color: #adb5bd;
+            font-size: 1.25rem;
+            margin-left: 1rem;
+        }
+        
+        .footer {
+            padding: 1.5rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        
+        .ritmex-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .ritmex-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 1.5rem;
+            }
+            
+            .title {
+                font-size: 1.5rem;
+            }
+            
+            .report-list {
+                padding: 1rem;
+            }
+            
+            .report-item {
+                padding: 1rem;
+            }
+            
+            .report-icon {
+                font-size: 1.25rem;
+                margin-right: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .report-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .report-icon {
+                margin-bottom: 0.75rem;
+                margin-right: 0;
+            }
+            
+            .report-arrow {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="research-card">
+            <div class="header">
+                <h1 class="title">RitMEX Research</h1>
+                <div class="subtitle">专业的区块链项目研究与分析</div>
+            </div>
+            
+            <div class="report-list">
+                <a href="https://pages.ritmex.one/kaito/" class="report-item" target="_blank">
+                    <div class="report-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="report-content">
+                        <div class="report-title">RitMEX Kaito 项目报告</div>
+                        <div class="report-subtitle">Kaito 精选区块链项目融资与嘴撸指南</div>
+                    </div>
+                    <div class="report-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+                
+                <!-- 可以在这里添加更多研究报告项目 -->
+                <!--
+                <a href="#" class="report-item" target="_blank">
+                    <div class="report-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="report-content">
+                        <div class="report-title">市场趋势分析</div>
+                        <div class="report-subtitle">2025年第二季度区块链市场展望</div>
+                    </div>
+                    <div class="report-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </a>
+                -->
+            </div>
+            
+            <div class="footer">
+                <p>访问 <a href="https://ritmex.one" class="ritmex-link" target="_blank">RitMEX 官网</a> 获取更多信息</p>
+                <p>© 2025 RitMEX Research. 保留所有权利。</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
