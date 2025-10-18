@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>OnlyFans 创作者数据 - 极简风格</title>
+        <link
+            href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-100-M/font-awesome/6.0.0/css/all.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            :root {
+                --primary-text: #333333;
+                --secondary-text: #666666;
+                --border-color: #e5e7eb;
+                --grid-color: #f3f4f6;
+                --chart-primary: #1f2937;
+                --chart-secondary: #9ca3af;
+                --accent: #9ca3af;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Noto Sans SC", sans-serif;
+                background-color: #ffffff;
+                color: var(--primary-text);
+                line-height: 1.5;
+            }
+
+            .minimal-card {
+                width: 440px;
+                margin: 0 auto;
+                padding: 48px 32px;
+                background-color: #ffffff;
+            }
+
+            .date-section {
+                text-align: right;
+                color: var(--secondary-text);
+                font-size: 14px;
+                margin-bottom: 32px;
+                font-weight: 300;
+            }
+
+            .main-title {
+                font-size: 28px;
+                font-weight: 700;
+                margin-bottom: 16px;
+                letter-spacing: -0.5px;
+            }
+
+            .subtitle {
+                font-size: 16px;
+                font-weight: 400;
+                color: var(--secondary-text);
+                margin-bottom: 48px;
+                border-bottom: 1px solid var(--border-color);
+                padding-bottom: 16px;
+            }
+
+            .chart-container {
+                margin-bottom: 48px;
+                background-color: #ffffff;
+            }
+
+            .chart-title {
+                font-size: 16px;
+                font-weight: 500;
+                margin-bottom: 24px;
+                color: var(--primary-text);
+            }
+
+            .chart-wrapper {
+                position: relative;
+                height: 240px;
+                margin-bottom: 8px;
+            }
+
+            .chart-note {
+                font-size: 12px;
+                color: var(--secondary-text);
+                text-align: right;
+                font-style: italic;
+            }
+
+            .data-source {
+                font-size: 12px;
+                color: var(--secondary-text);
+                margin-top: 32px;
+                padding-top: 16px;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .key-finding {
+                background-color: #f9fafb;
+                border-left: 2px solid var(--accent);
+                padding: 16px;
+                margin: 32px 0;
+            }
+
+            .key-finding-title {
+                font-weight: 500;
+                margin-bottom: 8px;
+            }
+
+            .key-finding-content {
+                font-size: 14px;
+                color: var(--secondary-text);
+            }
+
+            .qr-section {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-top: 48px;
+                padding-top: 24px;
+                border-top: 1px solid var(--border-color);
+            }
+
+            .qr-text {
+                font-size: 12px;
+                color: var(--secondary-text);
+            }
+
+            .list-item {
+                margin-bottom: 16px;
+                position: relative;
+                padding-left: 20px;
+                font-size: 15px;
+                color: var(--primary-text);
+                font-weight: 400;
+            }
+
+            .list-item:before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 8px;
+                width: 6px;
+                height: 6px;
+                background-color: var(--accent);
+                border-radius: 50%;
+            }
+
+            .editor-note {
+                font-size: 12px;
+                color: var(--secondary-text);
+                font-style: italic;
+                margin-top: 8px;
+            }
+
+            @media (max-width: 480px) {
+                .minimal-card {
+                    width: 100%;
+                    padding: 24px 16px;
+                }
+
+                .chart-wrapper {
+                    height: 200px;
+                }
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    </head>
+    <body>
+        <div class="minimal-card">
+            <div class="date-section">2025年10月18日</div>
+
+            <h1 class="main-title">OnlyFans 创作者数据解析</h1>
+            <p class="subtitle">深度解析平台创作者数量、收入分布与用户行为</p>
+
+            <div class="chart-container">
+                <h3 class="chart-title">创作者数量年度增长</h3>
+                <div class="chart-wrapper">
+                    <canvas id="creatorsChart"></canvas>
+                </div>
+                <p class="chart-note">数据来源：OnlyGuider</p>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">用户性别比例</h3>
+                <div class="chart-wrapper">
+                    <canvas id="genderChart"></canvas>
+                </div>
+                <p class="chart-note">男性用户占 78.95%，女性用户占 21.05%</p>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">OnlyFans 年收入</h3>
+                <div class="chart-wrapper">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+                <p class="chart-note">单位：十亿美元</p>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">创作者收入分布</h3>
+                <div class="chart-wrapper">
+                    <canvas id="earningsChart"></canvas>
+                </div>
+                <p class="chart-note">月均收入（美元）</p>
+            </div>
+
+            <div class="key-finding">
+                <div class="key-finding-title">核心发现</div>
+                <div class="key-finding-content">
+                    平台收入与创作者数量呈指数增长趋势，但收入分配极不均衡。前0.1%的创作者占据76%的收入，后99.9%的创作者仅分享24%的收入。近96%的男性用户在平台上没有消费行为。
+                </div>
+            </div>
+
+            <h3 class="chart-title">平台关键数据要点</h3>
+            <div class="list-item">
+                平台创作者数量从2019年的34.8万增长至2025年的418万，五年内增长超过12倍
+            </div>
+            <div class="list-item">
+                2024年平台收入达到66亿美元，较2019年增长约1347%
+            </div>
+            <div class="list-item">
+                男性用户占78.95%，女性用户占21.05%，25-34岁年龄段占比最高（36.16%）
+            </div>
+            <div class="list-item">
+                仅4.2%的男性用户有消费行为，人均消费48.52美元
+            </div>
+            <div class="editor-note">
+                注：以上数据基于RitMEX对OnlyGuider数据的统计分析
+            </div>
+
+            <div class="data-source">
+                数据来源：onlyguider | 由 RitMEX 统计整理
+            </div>
+
+            <div class="qr-section">
+                <div class="qr-text">扫码了解更多数据洞察</div>
+                <div id="qrcode"></div>
+            </div>
+        </div>
+
+        <script>
+            // 创建创作者数量图表
+            const creatorsCtx = document
+                .getElementById("creatorsChart")
+                .getContext("2d");
+            new Chart(creatorsCtx, {
+                type: "bar",
+                data: {
+                    labels: ["2019", "2020", "2021", "2022", "2023", "2025"],
+                    datasets: [
+                        {
+                            label: "创作者数量",
+                            data: [
+                                348000, 1618000, 2161000, 3182000, 4118000,
+                                4182411,
+                            ],
+                            backgroundColor: "#1F2937",
+                            borderWidth: 0,
+                            borderRadius: 2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: "#F3F4F6",
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: "#9CA3AF",
+                                font: {
+                                    size: 10,
+                                },
+                            },
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: "#9CA3AF",
+                                font: {
+                                    size: 10,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            // 创建性别比例饼图
+            const genderCtx = document
+                .getElementById("genderChart")
+                .getContext("2d");
+            new Chart(genderCtx, {
+                type: "pie",
+                data: {
+                    labels: ["男性", "女性"],
+                    datasets: [
+                        {
+                            data: [78.95, 21.05],
+                            backgroundColor: ["#1F2937", "#9CA3AF"],
+                            borderWidth: 0,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                color: "#9CA3AF",
+                                font: {
+                                    size: 10,
+                                },
+                                padding: 8,
+                            },
+                        },
+                    },
+                },
+            });
+
+            // 创建年收入图表
+            const revenueCtx = document
+                .getElementById("revenueChart")
+                .getContext("2d");
+            new Chart(revenueCtx, {
+                type: "bar",
+                data: {
+                    labels: ["2019", "2020", "2021", "2022", "2023", "2024"],
+                    datasets: [
+                        {
+                            label: "年收入（十亿美元）",
+                            data: [0.049, 0.358, 0.932, 1.1, 1.3, 6.6],
+                            backgroundColor: "#1F2937",
+                            borderWidth: 0,
+                            borderRadius: 2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: "#F3F4F6",
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: "#9CA3AF",
+                                font: {
+                                    size: 10,
+                                },
+                            },
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: "#9CA3AF",
+                                font: {
+                                    size: 10,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            // 创建收入分布图表
+            const earningsCtx = document
+                .getElementById("earningsChart")
+                .getContext("2d");
+            new Chart(earningsCtx, {
+                type: "bar",
+                data: {
+                    labels: [
+                        "前0.1%",
+                        "0.1%-1%",
+                        "1%-5%",
+                        "5%-10%",
+                        "10%-50%",
+                        "50%-100%",
+                    ],
+                    datasets: [
+                        {
+                            label: "月均收入",
+                            data: [146881, 33984, 8208, 1955, 24, 0],
+                            backgroundColor: "#1F2937",
+                            borderWidth: 0,
+                            borderRadius: 2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: "#F3F4F6",
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: "#9CA3AF",
+                                font: {
+                                    size: 10,
+                                },
+                            },
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                color: "#9CA3AF",
+                                font: {
+                                    size: 10,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            // 生成QR码
+            new QRCode(document.getElementById("qrcode"), {
+                text: "https://ritmex.one",
+                width: 80,
+                height: 80,
+                colorDark: "#1F2937",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H,
+            });
+        </script>
+    </body>
+</html>
