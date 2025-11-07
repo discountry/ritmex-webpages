@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五行喜火加密货币排行榜 - RitMEX</title>
+    <link href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-100-M/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a4a4a;
+            --border-color: #e5e5e5;
+            --accent-color: #d4af37;
+            --background: #ffffff;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: var(--background);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+        
+        .minimal-card {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            width: 100%;
+        }
+        
+        .date-badge {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            padding: 0.25rem 1rem;
+            border: 1px solid var(--border-color);
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+        }
+        
+        h1 {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 600;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+        
+        .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            letter-spacing: 0.025em;
+        }
+        
+        .currency-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        
+        .currency-table th {
+            font-weight: 400;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+        }
+        
+        .currency-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.875rem;
+        }
+        
+        .currency-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .currency-table tr:hover {
+            background-color: rgba(0, 0, 0, 0.01);
+        }
+        
+        .rank-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            font-weight: 500;
+        }
+        
+        .currency-symbol {
+            font-weight: 500;
+            font-family: 'Noto Serif SC', serif;
+        }
+        
+        .currency-name {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+        
+        .performance-positive {
+            color: #10b981;
+            font-weight: 500;
+        }
+        
+        .performance-negative {
+            color: #ef4444;
+            font-weight: 500;
+        }
+        
+        .quote-block {
+            border-left: 3px solid var(--accent-color);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .editor-note {
+            background-color: rgba(0, 0, 0, 0.02);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+        
+        .editor-note h3 {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .editor-note ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .editor-note li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .editor-note li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+        
+        @media (max-width: 768px) {
+            .minimal-card {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .currency-table {
+                font-size: 0.75rem;
+            }
+            
+            .currency-table th,
+            .currency-table td {
+                padding: 0.5rem;
+            }
+            
+            .quote-block {
+                padding-left: 1rem;
+            }
+        }
+        
+        .loading-fade {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sort-indicator {
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+            margin-left: 0.25rem;
+        }
+        
+        .currency-table th.sortable {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="minimal-card loading-fade">
+        <div class="date-badge">
+            <i class="far fa-calendar-alt mr-1"></i> 2025年11月7日
+        </div>
+        
+        <h1>五行喜火加密货币排行榜</h1>
+        <div class="subtitle">RitMEX | 五行投资洞察 <span class="sort-indicator">按1月涨跌幅排序</span></div>
+        
+        <table class="currency-table">
+            <thead>
+                <tr>
+                    <th style="width: 3rem;">排名</th>
+                    <th>货币</th>
+                    <th style="width: 5rem;">24h</th>
+                    <th style="width: 5rem;">1周</th>
+                    <th style="width: 5rem;">1月</th>
+                    <th style="width: 5rem;">3月</th>
+                    <th style="width: 5rem;">6月</th>
+                    <th style="width: 5rem;">YTD</th>
+                </tr>
+            </thead>
+            <tbody id="currencyTableBody">
+                <!-- 动态生成的货币数据 -->
+            </tbody>
+        </table>
+        
+        <div class="quote-block">
+            "丙戌月纯阳之火，火库之力催生个别加密货币表现抢眼。ZEC创历史新高，预示火行货币在纯火年或将迎来转机。"
+        </div>
+        
+        <div class="editor-note">
+            <h3>五行分析要点</h3>
+            <ul>
+                <li>丙为纯阳之火，戌为火库，本月火气旺盛</li>
+                <li>比特币喜金水，在火月表现承压</li>
+                <li>2026年为丙午年，纯火年，喜火货币或有持续表现</li>
+                <li>投资者可关注ZEC等已验证火行属性的加密资产</li>
+                <li>波动率指标显示，火行货币普遍波动较高，需做好风险管理</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 加密货币数据
+        const cryptoData = [
+            { symbol: "MMTUSDT", name: "MMT", performances: [-0.40, 469.90, 469.90, 469.90, 469.90, 469.90] },
+            { symbol: "ZECUSDT", name: "Zcash", performances: [24.06, 84.12, 399.96, 1541.09, 1358.95, 1030.31] },
+            { symbol: "DASHUSDT", name: "Dash", performances: [-0.96, 157.33, 277.84, 401.11, 349.21, 198.44] },
+            { symbol: "GIGGLEUSDT", name: "GIGGLE", performances: [-22.71, 68.10, 154.63, 154.63, 154.63, 154.63] },
+            { symbol: "KITEUSDT", name: "KITE", performances: [-4.69, 137.00, 137.00, 137.00, 137.00, 137.00] },
+            { symbol: "PIVXUSDT", name: "PIVX", performances: [-4.31, 46.77, 132.17, 111.05, 71.05, 0.74] },
+            { symbol: "ZENUSDT", name: "Horizen", performances: [2.90, 69.87, 109.12, 139.28, 83.44, -31.66] },
+            { symbol: "ICPUSDT", name: "ICP", performances: [34.61, 186.14, 87.23, 52.42, 41.87, -16.17] },
+            { symbol: "DCRUSDT", name: "Decred", performances: [-15.16, 100.12, 78.31, 83.51, 107.37, 110.51] },
+            { symbol: "YBUSDT", name: "YB", performances: [-3.35, -9.04, 69.03, 69.03, 69.03, 69.03] },
+            { symbol: "VIRTUALUSDT", name: "VIRTUAL", performances: [3.03, 4.45, 20.60, -4.40, -34.85, 212.22] },
+            { symbol: "SCRTUSDT", name: "Secret Network", performances: [28.44, 92.57, 26.97, 49.42, 8.67, -46.42] },
+            { symbol: "BATUSDT", name: "Basic Attention Token", performances: [6.11, 37.85, 52.97, 40.59, 29.45, -5.89] },
+            { symbol: "DUSKUSDT", name: "Dusk Network", performances: [55.36, 113.37, 43.27, 36.07, -12.27, -62.28] },
+            { symbol: "ADXUSDT", name: "AdEx", performances: [0.23, -7.62, 27.71, -4.03, 12.65, -38.49] },
+            { symbol: "DGBUSDT", name: "DGB", performances: [-8.06, 68.31, 25.38, 9.85, -8.56, -4.98] },
+            { symbol: "ZKUSDT", name: "ZK", performances: [-0.96, 125.98, 20.23, 16.48, -15.69, -64.13] }
+        ];
+
+        // 当前排序列索引（0:24h, 1:1周, 2:1月, 3:3月, 4:6月, 5:YTD）
+        let currentSortIndex = 2;
+
+        // 渲染表格
+        function renderTableBody(data) {
+            const tableBody = document.getElementById('currencyTableBody');
+            tableBody.innerHTML = '';
+            
+            data.forEach((crypto, index) => {
+                const row = document.createElement('tr');
+                
+                // 排名单元格
+                const rankCell = document.createElement('td');
+                rankCell.innerHTML = `<div class="rank-number">${index + 1}</div>`;
+                
+                // 货币名称单元格
+                const nameCell = document.createElement('td');
+                nameCell.innerHTML = `
+                    <div class="currency-symbol">${crypto.symbol}</div>
+                    <div class="currency-name">${crypto.name}</div>
+                `;
+                
+                // 性能数据单元格
+                const performanceCells = crypto.performances.map((perf) => {
+                    const cell = document.createElement('td');
+                    cell.className = perf >= 0 ? 'performance-positive' : 'performance-negative';
+                    cell.textContent = `${perf >= 0 ? '+' : ''}${perf.toFixed(2)}%`;
+                    return cell;
+                });
+                
+                // 组合行
+                row.appendChild(rankCell);
+                row.appendChild(nameCell);
+                performanceCells.forEach(cell => row.appendChild(cell));
+                
+                // 添加淡入动画
+                row.style.animation = `fadeIn 0.6s ease-out ${index * 0.05}s both`;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        function updateSortIndicator(label) {
+            const indicator = document.querySelector('.sort-indicator');
+            if (indicator) {
+                indicator.textContent = `按${label}涨跌幅排序`;
+            }
+        }
+
+        function sortAndRender() {
+            const sorted = [...cryptoData].sort((a, b) => b.performances[currentSortIndex] - a.performances[currentSortIndex]);
+            renderTableBody(sorted);
+            const labels = ['24h', '1周', '1月', '3月', '6月', 'YTD'];
+            updateSortIndicator(labels[currentSortIndex]);
+        }
+
+        function attachHeaderSortHandlers() {
+            const headers = document.querySelectorAll('.currency-table thead th');
+            for (let i = 2; i < headers.length; i++) { // 从24h开始
+                headers[i].classList.add('sortable');
+                headers[i].addEventListener('click', () => {
+                    currentSortIndex = i - 2; // 映射到performances索引
+                    sortAndRender();
+                });
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            attachHeaderSortHandlers();
+            sortAndRender();
+        });
+    </script>
+</body>
+</html>
