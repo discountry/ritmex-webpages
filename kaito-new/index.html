@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaito Earn 活动清单</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .activity-item {
+            transition: opacity 0.3s ease;
+        }
+        .sort-btn {
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <main class="w-full md:max-w-lg lg:max-w-xl bg-white shadow-lg rounded-lg overflow-hidden mx-auto">
+        <!-- 卡片头部 -->
+        <header class="p-8 pb-6 border-b border-gray-200">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h1 class="text-xl font-normal text-gray-900 tracking-tight">KAITO EARN</h1>
+                    <p class="text-sm text-gray-500 mt-1">ACTIVE CAMPAIGNS</p>
+                </div>
+                <time class="text-xs text-gray-400 mt-1">NOVEMBER 08 / 2025</time>
+            </div>
+            
+            <!-- 排序控件 -->
+            <div class="flex items-center justify-between mt-6">
+                <span class="text-xs text-gray-400 font-light">按截止时间排序</span>
+                <button id="sortToggle" class="sort-btn flex items-center text-xs text-gray-600 hover:text-gray-900 font-light">
+                    <span id="sortLabel">升序</span>
+                    <i id="sortIcon" class="fas fa-arrow-up ml-2 text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- 活动列表 -->
+        <section id="activityList" class="p-8 pt-6">
+            <!-- 活动项目将通过JavaScript动态插入 -->
+        </section>
+
+        <!-- 编者注 -->
+        <footer class="px-8 pb-8">
+            <div class="border-t border-gray-200 pt-6">
+                <p class="text-xs text-gray-400 font-light leading-relaxed">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    本清单按截止时间排序，数据由 RitMEX 整理维护。建议创作者密切关注各项目最新动态。
+                </p>
+            </div>
+            <div class="mt-6 text-center">
+                <p class="text-xs text-gray-400">整理 by <span class="font-medium text-gray-600">RitMEX</span></p>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // 活动数据
+        const activities = [
+            { name: "Flipster", period: "2025-11-03 — 2025-11-16", deadline: "2025-11-16", note: "Top 50 创作者 + 社交活动获胜者" },
+            { name: "MultiBank", period: "2025-07-22 — 2025-11-30", deadline: "2025-11-30", note: "Top 200 创作者" },
+            { name: "Surf", period: "2025-07-01 — 2025-11-30", deadline: "2025-11-30", note: "Top 100 创作者" },
+            { name: "Theo（50K $THBILL / 月）", period: "2025-10-14 — 2025-12-14", deadline: "2025-12-14", note: "Top 50（全球）+ Top 25（KR）+ Top 25（CN）" },
+            { name: "INFINIT（Season 3）", period: "2025-10-16 — 2025-12-16", deadline: "2025-12-16", note: "Top 2,000 创作者" },
+            { name: "ApeX Protocol", period: "2025-10-27 — 2025-12-25", deadline: "2025-12-25", note: "Phase 1/2：Top 100/150" },
+            { name: "Arbitrum", period: "2025-10-07 — 2025-12-31", deadline: "2025-12-31", note: "Top 150 每月" },
+            { name: "Beldex", period: "2025-10-01 — 2025-12-31", deadline: "2025-12-31", note: "Top 100（30天榜单），3个月均分" },
+            { name: "Yeet（月度奖励）", period: "2025-07-09 — 2026-01-09", deadline: "2026-01-09", note: "通过 Kaito 推荐码获批且活跃的用户" },
+            { name: "Theoriq（1M $THQ 活动）", period: "2025-04-15 — 2026-01-15", deadline: "2026-01-15", note: "每月 111,111 $THQ，Top 150" },
+            { name: "Lombard", period: "2025-01-01 — 2026-03-31", deadline: "2026-03-31", note: "每月 Top 100 贡献者" },
+            { name: "Anichess", period: "2025-10-01 — 2026-04-01", deadline: "2026-04-01", note: "每月 Top 200 创作者（CHECK）" },
+            { name: "GOAT Network", period: "2025-06-17 — 2026-05-27", deadline: "2026-05-27", note: "1% 代币供给分配给创作者与 Kaito Eco" }
+        ];
+
+        let isAscending = true;
+        const listContainer = document.getElementById('activityList');
+        const sortToggle = document.getElementById('sortToggle');
+        const sortLabel = document.getElementById('sortLabel');
+        const sortIcon = document.getElementById('sortIcon');
+
+        // 渲染列表
+        function renderList() {
+            const sortedActivities = [...activities].sort((a, b) => {
+                const dateA = new Date(a.deadline);
+                const dateB = new Date(b.deadline);
+                return isAscending ? dateA - dateB : dateB - dateA;
+            });
+
+            listContainer.innerHTML = sortedActivities.map((activity, index) => `
+                <div class="activity-item ${index !== sortedActivities.length - 1 ? 'border-b border-gray-100' : ''} pb-5 mb-5 last:pb-0 last:mb-0 last:border-b-0">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex-1 pr-4">
+                            <h3 class="text-base font-medium text-gray-900 leading-tight mb-1">${activity.name}</h3>
+                            <p class="text-xs text-gray-500 font-light">${activity.period}</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <span class="text-xs text-gray-400 font-light block">截止</span>
+                            <time class="text-sm font-light text-gray-700">${activity.deadline}</time>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 font-light leading-snug">${activity.note}</p>
+                </div>
+            `).join('');
+        }
+
+        // 切换排序
+        sortToggle.addEventListener('click', () => {
+            isAscending = !isAscending;
+            sortLabel.textContent = isAscending ? '升序' : '降序';
+            sortIcon.className = isAscending ? 'fas fa-arrow-up ml-2 text-xs' : 'fas fa-arrow-down ml-2 text-xs';
+            renderList();
+        });
+
+        // 初始渲染
+        renderList();
+    </script>
+</body>
+</html>
