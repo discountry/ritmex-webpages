@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RitMEX 自转账</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <meta name="color-scheme" content="dark light" />
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield;
+      }
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body class="h-full bg-slate-950 text-slate-100 antialiased">
+    <div class="min-h-full">
+      <header
+        class="sticky top-0 z-10 backdrop-blur bg-slate-950/70 border-b border-slate-800/70"
+      >
+        <div
+          class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between"
+        >
+          <div class="flex items-center gap-2">
+            <div
+              class="h-7 w-7 rounded-md bg-blue-500/20 ring-1 ring-blue-400/30 grid place-items-center"
+            >
+              <span class="text-blue-300 text-sm font-semibold select-none"
+                >R</span
+              >
+            </div>
+            <h1 class="text-base font-semibold tracking-wide">RitMEX 自转账</h1>
+          </div>
+          <div class="flex items-center gap-2">
+            <button
+              id="connect"
+              class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium hover:bg-blue-500 active:scale-[.99] transition"
+            >
+              连接钱包
+            </button>
+            <button
+              id="disconnect"
+              class="inline-flex items-center gap-2 rounded-lg bg-slate-700 px-3 py-1.5 text-sm font-medium hover:bg-slate-600 active:scale-[.99] transition disabled:opacity-50"
+              disabled
+            >
+              断开
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="mx-auto max-w-6xl px-4 py-6">
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="lg:col-span-2">
+            <div
+              class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6"
+            >
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="size-2 rounded-full bg-rose-400 shadow-[0_0_12px] shadow-rose-400/50"
+                    id="dot"
+                  ></div>
+                  <p id="status" class="text-sm text-slate-300">未连接</p>
+                </div>
+                <p id="networkInfo" class="text-xs text-slate-400">—</p>
+              </div>
+
+              <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <label class="block">
+                  <span class="mb-1 block text-sm text-slate-300">次数</span>
+                  <input
+                    id="count"
+                    type="number"
+                    min="1"
+                    value="5"
+                    class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm outline-none ring-0 focus:border-blue-500"
+                  />
+                </label>
+                <label class="block">
+                  <span class="mb-1 block text-sm text-slate-300"
+                    >等待确认数</span
+                  >
+                  <input
+                    id="confs"
+                    type="number"
+                    min="0"
+                    value="1"
+                    class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  />
+                </label>
+                <label class="block">
+                  <span class="mb-1 block text-sm text-slate-300"
+                    >每笔最小间隔(ms)</span
+                  >
+                  <input
+                    id="delay"
+                    type="number"
+                    min="0"
+                    value="500"
+                    class="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  />
+                </label>
+              </div>
+
+              <div class="mt-5 flex flex-wrap items-center gap-3">
+                <button
+                  id="start"
+                  class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-500 active:scale-[.99] transition disabled:opacity-50"
+                  disabled
+                >
+                  开始发送
+                </button>
+                <button
+                  id="stop"
+                  class="rounded-xl bg-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-600 active:scale-[.99] transition disabled:opacity-50"
+                  disabled
+                >
+                  停止
+                </button>
+                <button
+                  id="clear"
+                  class="rounded-xl bg-slate-800 px-4 py-2 text-sm font-medium hover:bg-slate-700 active:scale-[.99] transition"
+                >
+                  清日志
+                </button>
+              </div>
+
+              <div
+                class="mt-5 rounded-xl border border-slate-800 bg-black/30 p-3"
+              >
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-medium text-slate-200">运行日志</h3>
+                  <span class="text-[10px] text-slate-400">自动滚动</span>
+                </div>
+                <div
+                  id="log"
+                  aria-live="polite"
+                  class="mt-2 max-h-[44vh] overflow-auto rounded-lg bg-slate-950 p-3 text-xs leading-5 font-mono text-slate-200"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="lg:col-span-1">
+            <div
+              class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-6"
+            >
+              <h3 class="text-sm font-semibold text-slate-100">提示</h3>
+              <ul class="mt-3 space-y-2 text-sm text-slate-300">
+                <li>每笔交易都会产生 gas 费.</li>
+                <li>大次数会弹窗确认.</li>
+                <li>若钱包拒绝 file 协议，请用本地 http 服务打开.</li>
+              </ul>
+              <div
+                class="mt-4 rounded-lg border border-amber-600/40 bg-amber-500/10 p-3 text-amber-200 text-xs"
+              >
+                当前链名称、符号、区块浏览器链接会自动识别.
+              </div>
+            </div>
+          </aside>
+        </section>
+      </main>
+
+      <footer class="mt-8 border-t border-slate-800/70">
+        <div class="mx-auto max-w-6xl px-4 py-6 text-xs text-slate-500">
+          © RitMEX. Use at your own risk
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      (function () {
+        const $ = (id) => document.getElementById(id);
+        const logEl = $("log"),
+          statusEl = $("status"),
+          dotEl = $("dot"),
+          netEl = $("networkInfo");
+        let provider = null,
+          currentAccount = null,
+          currentChainId = null,
+          stopFlag = false,
+          chainList = [];
+
+        async function fetchChains() {
+          try {
+            chainList = await fetch("https://chainid.network/chains.json").then(
+              (r) => r.json()
+            );
+            console.log("chain list loaded", chainList.length);
+          } catch (e) {
+            console.warn("chain list fetch failed", e);
+          }
+        }
+        fetchChains(); // 提前加载一次
+
+        function log(...args) {
+          const t = new Date().toLocaleTimeString();
+          const msg = args
+            .map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a)))
+            .join(" ");
+          const div = document.createElement("div");
+          div.textContent = "[" + t + "] " + msg;
+          logEl.appendChild(div);
+          logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function pickProvider() {
+          const eth = window.ethereum;
+          if (!eth) return null;
+          if (Array.isArray(eth.providers) && eth.providers.length) {
+            const mm = eth.providers.find((p) => p.isMetaMask);
+            return mm || eth.providers[0];
+          }
+          return eth;
+        }
+
+        function shortAddr(a) {
+          return a ? a.slice(0, 6) + "…" + a.slice(-4) : "";
+        }
+        function toDec(hex) {
+          return parseInt(hex, 16);
+        }
+        function sleep(ms) {
+          return new Promise((r) => setTimeout(r, ms));
+        }
+
+        function getChainMeta(chainId) {
+          const idDec = parseInt(chainId, 16);
+          return chainList.find((c) => c.chainId === idDec) || null;
+        }
+
+        function updateStatus() {
+          const meta = getChainMeta(currentChainId);
+          const name = meta
+            ? meta.name
+            : `未知网络 (${parseInt(currentChainId || "0", 16)})`;
+          const acc = currentAccount
+            ? "已连接 " + shortAddr(currentAccount)
+            : "未连接";
+          statusEl.textContent = `${acc} · ${name}`;
+          if (meta) {
+            netEl.innerHTML = `<span>${meta.nativeCurrency?.symbol || ""}</span>
+              ${
+                meta.explorers && meta.explorers[0]
+                  ? `· <a href="${meta.explorers[0].url}" target="_blank" class="text-blue-400 underline">${meta.explorers[0].name}</a>`
+                  : ""
+              }`;
+          } else {
+            netEl.textContent = "—";
+          }
+          if (currentAccount) {
+            dotEl.classList.replace("bg-rose-400", "bg-emerald-400");
+          } else {
+            dotEl.classList.replace("bg-emerald-400", "bg-rose-400");
+          }
+        }
+
+        async function connect() {
+          provider = pickProvider();
+          if (!provider) {
+            statusEl.textContent = "未检测到钱包";
+            return;
+          }
+          try {
+            const accs = await provider.request({
+              method: "eth_requestAccounts",
+            });
+            currentAccount = accs[0];
+            currentChainId = await provider.request({ method: "eth_chainId" });
+            $("start").disabled = false;
+            $("disconnect").disabled = false;
+            updateStatus();
+            bindEventsOnce();
+            log("Connected", currentAccount, "Chain", currentChainId);
+          } catch (e) {
+            log("连接失败", e.message || e);
+          }
+        }
+
+        async function disconnect() {
+          currentAccount = null;
+          currentChainId = null;
+          $("start").disabled = true;
+          $("disconnect").disabled = true;
+          updateStatus();
+          log("本地状态已清空");
+        }
+
+        let eventsBound = false;
+        function bindEventsOnce() {
+          if (eventsBound || !provider || !provider.on) return;
+          eventsBound = true;
+          provider.on("accountsChanged", (accs) => {
+            if (!accs || !accs.length) {
+              disconnect();
+              return;
+            }
+            currentAccount = accs[0];
+            updateStatus();
+            log("账户切换", currentAccount);
+          });
+          provider.on("chainChanged", (cid) => {
+            currentChainId = cid;
+            updateStatus();
+            log("网络切换", cid);
+          });
+          provider.on("disconnect", (err) => {
+            log("provider断开", err);
+            disconnect();
+          });
+        }
+
+        $("connect").onclick = connect;
+        $("disconnect").onclick = disconnect;
+        $("clear").onclick = () => {
+          logEl.innerHTML = "";
+        };
+        $("stop").onclick = () => {
+          stopFlag = true;
+          $("stop").disabled = true;
+          log("收到停止请求");
+        };
+
+        async function getBlockNumber() {
+          return toDec(await provider.request({ method: "eth_blockNumber" }));
+        }
+        async function getReceipt(tx) {
+          return await provider.request({
+            method: "eth_getTransactionReceipt",
+            params: [tx],
+          });
+        }
+
+        async function waitForConfirmations(txHash, target) {
+          if (target < 1) target = 1;
+          let receipt = null;
+          for (;;) {
+            receipt = await getReceipt(txHash);
+            if (receipt && receipt.blockNumber) break;
+            await sleep(1200);
+          }
+          const mined = toDec(receipt.blockNumber);
+          for (;;) {
+            const tip = await getBlockNumber();
+            if (tip - mined + 1 >= target) return receipt;
+            await sleep(1200);
+          }
+        }
+
+        $("start").onclick = async () => {
+          if (!provider) {
+            log("无provider");
+            return;
+          }
+          const accs = await provider.request({ method: "eth_accounts" });
+          if (!accs.length) {
+            log("未连接钱包");
+            return;
+          }
+          currentAccount = accs[0];
+          const total = Math.max(1, parseInt($("count").value || "1", 10));
+          let confs = parseInt($("confs").value || "1", 10);
+          const delay = Math.max(0, parseInt($("delay").value || "0", 10));
+          if (total > 500 && !confirm(`你设置了${total}笔. 继续?`)) return;
+          $("start").disabled = true;
+          $("stop").disabled = false;
+          stopFlag = false;
+          log("开始. 总次数", total, "确认数", confs);
+          for (let i = 0; i < total; i++) {
+            if (stopFlag) {
+              log("已停止");
+              break;
+            }
+            const tx = {
+              from: currentAccount,
+              to: currentAccount,
+              value: "0x0",
+            };
+            try {
+              const txHash = await provider.request({
+                method: "eth_sendTransaction",
+                params: [tx],
+              });
+              log(`第${i + 1}/${total}笔已发送`, txHash);
+              const rc = await waitForConfirmations(txHash, confs);
+              log(
+                "已确认 区块",
+                toDec(rc.blockNumber),
+                "gasUsed",
+                toDec(rc.gasUsed)
+              );
+            } catch (e) {
+              log("交易失败", e.message || e);
+              break;
+            }
+            if (delay > 0) await sleep(delay);
+          }
+          $("start").disabled = false;
+          $("stop").disabled = true;
+          log("流程结束");
+        };
+
+        updateStatus();
+      })();
+    </script>
+  </body>
+</html>
