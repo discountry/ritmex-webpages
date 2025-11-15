@@ -722,6 +722,10 @@
                 <span class="icon">♻️</span>
                 清空重新开始
               </button>
+              <button id="downloadBtn" class="secondary">
+                <span class="icon">💾</span>
+                下载应用到本地
+              </button>
             </div>
             <div class="status-text" id="drawStatus">
               当前已抽 0 / 24 张
@@ -1012,6 +1016,7 @@
     const drawOneBtn = document.getElementById("drawOneBtn");
     const autoDrawBtn = document.getElementById("autoDrawBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
     const drawStatus = document.getElementById("drawStatus");
     const deckVisual = document.getElementById("deckVisual");
     const deckLabel = document.getElementById("deckLabel");
@@ -1671,6 +1676,39 @@
       if (autoDrawing) return;
       resetDeck();
       doShuffleWithAnimation();
+    });
+
+    downloadBtn.addEventListener("click", async () => {
+      try {
+        const url = "https://github.com/discountry/ritmex-webpages/raw/refs/heads/main/tools/cards/index.html";
+        downloadBtn.disabled = true;
+        downloadBtn.textContent = "正在下载...";
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("下载失败");
+        }
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = "扑克牌助记词生成器.html";
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        URL.revokeObjectURL(blobUrl);
+        
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = '<span class="icon">💾</span>下载应用到本地';
+      } catch (error) {
+        console.error("下载失败:", error);
+        alert("下载失败，请稍后重试或手动访问: https://github.com/discountry/ritmex-webpages/raw/refs/heads/main/tools/cards/index.html");
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = '<span class="icon">💾</span>下载应用到本地';
+      }
     });
   </script>
 </body>
