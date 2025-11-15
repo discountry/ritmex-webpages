@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>扑克牌助记词生成器</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      /* Wood grain texture background */
+      background: 
+        linear-gradient(90deg, rgba(101,67,33,0.1) 1px, transparent 1px),
+        linear-gradient(rgba(101,67,33,0.1) 1px, transparent 1px),
+        linear-gradient(120deg, #3e2723 0%, #5d4037 25%, #4e342e 50%, #3e2723 75%, #5d4037 100%);
+      background-size: 40px 40px, 40px 40px, 100% 100%;
+      color: #fdf5e6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* Wood frame border effect - REMOVED */
+    
+    .app-container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 15px 30px 15px;
+      position: relative;
+    }
+    
+    .card-panel {
+      /* Green felt poker table */
+      background: 
+        radial-gradient(ellipse at center, rgba(255,255,255,0.03) 0%, transparent 70%),
+        repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+        linear-gradient(180deg, #0a5c2e 0%, #0d7539 50%, #0a5c2e 100%);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 
+        inset 0 0 50px rgba(0,0,0,0.5),
+        inset 0 2px 4px rgba(255,255,255,0.1),
+        0 20px 60px rgba(0,0,0,0.8);
+      border: 8px solid #654321;
+      position: relative;
+    }
+    
+    /* Leather padding effect around felt */
+    .card-panel::before {
+      content: '';
+      position: absolute;
+      inset: -8px;
+      background: 
+        linear-gradient(135deg, #2c1810 0%, #3e2315 50%, #2c1810 100%);
+      border-radius: 24px;
+      z-index: -1;
+      box-shadow: 
+        inset 0 0 20px rgba(0,0,0,0.8),
+        0 10px 30px rgba(0,0,0,0.9);
+    }
+    
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      font-family: 'Georgia', serif;
+      letter-spacing: 1px;
+    }
+    
+    h1 span.logo {
+      display: inline-flex;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      align-items: center;
+      justify-content: center;
+      background: 
+        radial-gradient(circle at 30% 30%, #ffd700, #b8860b);
+      box-shadow: 
+        0 0 20px rgba(255, 215, 0, 0.6),
+        inset 0 -2px 10px rgba(0,0,0,0.4),
+        inset 0 2px 10px rgba(255,255,255,0.4);
+      font-weight: 700;
+      font-size: 24px;
+      border: 3px solid #8b7355;
+    }
+    
+    .subtitle {
+      font-size: 12px;
+      color: #ffe4b5;
+      margin-bottom: 12px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+      font-style: italic;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: 15px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    /* Poker chip style buttons */
+    button {
+      border: none;
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+      background: 
+        radial-gradient(circle at 30% 30%, #ffd700, #daa520, #b8860b);
+      color: #1a1a1a;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+      box-shadow: 
+        0 6px 0 #8b6914,
+        0 8px 15px rgba(0, 0, 0, 0.6),
+        inset 0 1px 2px rgba(255,255,255,0.5),
+        inset 0 -1px 2px rgba(0,0,0,0.3);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      border: 3px double rgba(139,101,20,0.8);
+    }
+    
+    button::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 50px;
+      border: 1px dashed rgba(139,101,20,0.4);
+    }
+    
+    button.secondary {
+      background: 
+        radial-gradient(circle at 30% 30%, #708090, #556270, #2f4f4f);
+      color: #f0f0f0;
+      box-shadow: 
+        0 6px 0 #1c1c1c,
+        0 8px 15px rgba(0, 0, 0, 0.6),
+        inset 0 1px 2px rgba(255,255,255,0.3),
+        inset 0 -1px 2px rgba(0,0,0,0.4);
+      border-color: rgba(28,28,28,0.8);
+    }
+    
+    button.danger {
+      background: 
+        radial-gradient(circle at 30% 30%, #dc143c, #b22222, #8b0000);
+      color: #fff;
+      box-shadow: 
+        0 6px 0 #5c0000,
+        0 8px 15px rgba(0, 0, 0, 0.6),
+        inset 0 1px 2px rgba(255,255,255,0.3),
+        inset 0 -1px 2px rgba(0,0,0,0.4);
+      border-color: rgba(92,0,0,0.8);
+    }
+    
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+      filter: grayscale(0.6);
+    }
+    
+    button:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 
+        0 8px 0 #8b6914,
+        0 12px 20px rgba(0, 0, 0, 0.7),
+        inset 0 1px 2px rgba(255,255,255,0.6),
+        inset 0 -1px 2px rgba(0,0,0,0.3);
+    }
+    
+    button:not(:disabled):active {
+      transform: translateY(4px);
+      box-shadow: 
+        0 2px 0 #8b6914,
+        0 4px 8px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(0,0,0,0.3);
+    }
+    
+    button.secondary:not(:disabled):hover {
+      box-shadow: 
+        0 8px 0 #1c1c1c,
+        0 12px 20px rgba(0, 0, 0, 0.7),
+        inset 0 1px 2px rgba(255,255,255,0.4);
+    }
+    
+    button.danger:not(:disabled):hover {
+      box-shadow: 
+        0 8px 0 #5c0000,
+        0 12px 20px rgba(220, 20, 60, 0.6),
+        inset 0 1px 2px rgba(255,255,255,0.4);
+    }
+    
+    button span.icon {
+      font-size: 14px;
+    }
+
+    .status-text {
+      font-size: 11px;
+      color: #ffe4b5;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      font-weight: 600;
+    }
+
+    .deck-and-slots {
+      display: block;
+    }
+
+    .deck-area {
+      margin-top: 30px;
+    }
+
+    .deck-visual {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      margin: 0 auto;
+      /* Performance optimization for container */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+    
+    .deck-visual.shuffling {
+      /* Disable pointer events during animation for better performance */
+      pointer-events: none;
+    }
+    
+    .deck-visual.shuffling .deck-card {
+      pointer-events: auto;
+    }
+    
+    .deck-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 70px;
+      height: 105px;
+      border-radius: 8px;
+      /* Ornate card back design */
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 20%, transparent 20%),
+        repeating-linear-gradient(45deg, #1e3a8a 0, #1e3a8a 3px, #1e40af 3px, #1e40af 6px),
+        repeating-linear-gradient(-45deg, #1e3a8a 0, #1e3a8a 3px, #1e40af 3px, #1e40af 6px),
+        radial-gradient(circle at 30% 30%, #3b82f6, #1e40af);
+      border: 2px solid #b8860b;
+      box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        0 2px 6px rgba(30, 64, 175, 0.4),
+        inset 0 1px 0 rgba(255,255,255,0.2),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+      transform-origin: center center;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, z-index 0s;
+      cursor: pointer;
+      pointer-events: auto;
+      /* Performance optimization */
+      will-change: transform, opacity;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    /* Riffle shuffle animation - cards fly from left and right alternately */
+    .deck-visual.shuffling .deck-card {
+      animation: riffle-shuffle-left 1.2s ease-out infinite;
+    }
+    
+    .deck-visual.shuffling .deck-card:nth-child(2n) {
+      animation-name: riffle-shuffle-right;
+    }
+    
+    .deck-visual.shuffling .deck-card:nth-child(3n) {
+      animation-delay: 0.08s;
+    }
+    
+    .deck-visual.shuffling .deck-card:nth-child(4n) {
+      animation-delay: 0.12s;
+    }
+    
+    .deck-visual.shuffling .deck-card:nth-child(5n) {
+      animation-delay: 0.04s;
+    }
+    
+    .deck-visual.shuffling .deck-card:nth-child(6n) {
+      animation-delay: 0.16s;
+    }
+    
+    /* Cards flying from left side - GPU optimized (only transform + opacity) */
+    @keyframes riffle-shuffle-left {
+      0% {
+        transform: translate3d(-180px, -80px, 0) rotate(-45deg) scale(0.85);
+        opacity: 0.4;
+      }
+      50% {
+        transform: translate3d(-60px, -20px, 0) rotate(-15deg) scale(0.95);
+        opacity: 0.9;
+      }
+      100% {
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+        opacity: 1;
+      }
+    }
+    
+    /* Cards flying from right side - GPU optimized (only transform + opacity) */
+    @keyframes riffle-shuffle-right {
+      0% {
+        transform: translate3d(180px, -80px, 0) rotate(45deg) scale(0.85);
+        opacity: 0.4;
+      }
+      50% {
+        transform: translate3d(60px, -20px, 0) rotate(15deg) scale(0.95);
+        opacity: 0.9;
+      }
+      100% {
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .deck-label {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #ffe4b5;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      font-weight: 600;
+    }
+
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .card-slot {
+      width: 100%;
+      aspect-ratio: 0.7;
+      border-radius: 8px;
+      border: 2px dashed rgba(255, 228, 181, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05), transparent 70%),
+        linear-gradient(145deg, rgba(10,92,46,0.6), rgba(13,117,57,0.6));
+      box-shadow: 
+        inset 0 2px 8px rgba(0,0,0,0.4),
+        0 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .card-slot.filled {
+      border-style: solid;
+      border-color: rgba(184, 134, 11, 0.6);
+      box-shadow: 
+        inset 0 0 10px rgba(0,0,0,0.5),
+        0 4px 8px rgba(0,0,0,0.4);
+    }
+    
+    .card-slot-controls {
+      position: absolute;
+      bottom: 3px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+    }
+    
+    .card-slot-controls select {
+      font-size: 15px;
+      padding: 2px 6px;
+      border-radius: 5px;
+      border: 2px solid #8b7355;
+      background: rgba(62, 35, 19, 0.95);
+      color: #ffe4b5;
+      min-width: 60px;
+      text-align: center;
+      font-family: 'Georgia', serif;
+    }
+    
+    .card-slot-controls button.manual-apply-btn {
+      padding: 3px 9px;
+      font-size: 14px;
+      box-shadow: 
+        0 3px 0 #8b6914,
+        0 5px 9px rgba(0, 0, 0, 0.5);
+    }
+    
+    .slot-index {
+      position: absolute;
+      top: 3px;
+      left: 5px;
+      font-size: 9px;
+      color: rgba(255, 228, 181, 0.5);
+      pointer-events: none;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+      font-weight: 600;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 3px;
+      font-weight: 700;
+      font-family: 'Georgia', serif;
+      /* Card texture */
+      background-image: 
+        repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(0,0,0,0.02) 1px, rgba(0,0,0,0.02) 2px);
+      box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+    }
+    
+    .card-back {
+      background-color: #1e40af;
+      background-image:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 20%, transparent 20%),
+        repeating-linear-gradient(45deg, #1e3a8a 0, #1e3a8a 3px, #1e40af 3px, #1e40af 6px),
+        repeating-linear-gradient(-45deg, #1e3a8a 0, #1e3a8a 3px, #1e40af 3px, #1e40af 6px),
+        radial-gradient(circle at 30% 30%, #3b82f6, #1e40af);
+      border: 2px solid #1e3a8a;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .card-back::before {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(147, 197, 253, 0.4);
+    }
+    
+    .card-back-logo {
+      font-size: 16px;
+      letter-spacing: 1px;
+      color: #e5e7eb;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    }
+    
+    .card-back-sub {
+      font-size: 8px;
+      color: #bfdbfe;
+      opacity: 0.8;
+    }
+
+    .card-front {
+      /* Cream card face with linen texture */
+      background-color: #fef9f3;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 1px, rgba(210,180,140,0.05) 1px, rgba(210,180,140,0.05) 2px),
+        repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(210,180,140,0.05) 1px, rgba(210,180,140,0.05) 2px),
+        linear-gradient(180deg, #fef9f3 0%, #f5f1e8 100%);
+      border: 2px solid #d2b48c;
+      color: #1a1a1a;
+      position: relative;
+      box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(255,255,255,0.8),
+        inset 0 -1px 0 rgba(0,0,0,0.1);
+    }
+    
+    .card-front .rank {
+      font-size: 14px;
+      align-self: flex-start;
+      padding-left: 5px;
+      font-weight: 900;
+      text-shadow: 0 1px 1px rgba(255,255,255,0.5);
+    }
+    
+    .card-front .suit {
+      font-size: 12px;
+      align-self: flex-start;
+      padding-left: 5px;
+      margin-top: -2px;
+    }
+    
+    .card-front .center-mark {
+      font-size: 20px;
+      margin-top: auto;
+      margin-bottom: 3px;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+    }
+    
+    .card-front .rank.bottom {
+      align-self: flex-end;
+      padding-right: 3px;
+      transform: rotate(180deg);
+    }
+    
+    .card-front .suit.bottom {
+      align-self: flex-end;
+      padding-right: 3px;
+      margin-top: -3px;
+      transform: rotate(180deg);
+    }
+    
+    .card-front.suit-hearts,
+    .card-front.suit-diamonds {
+      color: #c41e3a;
+    }
+
+    .card-appear {
+      animation: card-appear 0.24s ease-out;
+    }
+    
+    @keyframes card-appear {
+      0% {
+        transform: translateY(10px) scale(0.9) rotateY(20deg);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0) scale(1) rotateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* Ornate wooden plaque style */
+    .info-panel {
+      background: 
+        linear-gradient(135deg, #4a2c1a 0%, #5d3a24 50%, #4a2c1a 100%);
+      border-radius: 12px;
+      padding: 14px 16px;
+      border: 4px solid #8b6f47;
+      box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.9),
+        inset 0 2px 4px rgba(0,0,0,0.6),
+        inset 0 -2px 4px rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+    
+    /* Brass corner decorations */
+    .info-panel::before,
+    .info-panel::after {
+      content: '✦';
+      position: absolute;
+      font-size: 18px;
+      color: #b8860b;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    }
+    
+    .info-panel::before {
+      top: 8px;
+      left: 8px;
+    }
+    
+    .info-panel::after {
+      top: 8px;
+      right: 8px;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #ffe4b5;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+    
+    .info-row strong {
+      color: #ffd700;
+      font-weight: 700;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+    }
+    
+    .entropy-box,
+    .mnemonic-box {
+      /* Parchment texture */
+      background: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139,105,20,0.03) 2px, rgba(139,105,20,0.03) 4px),
+        linear-gradient(180deg, #f4e9d8, #e8dcc5);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11px;
+      border: 2px solid #8b6914;
+      max-height: 110px;
+      overflow: auto;
+      word-break: break-all;
+      color: #2c1810;
+      font-family: 'Courier New', monospace;
+      box-shadow: 
+        inset 0 2px 6px rgba(0,0,0,0.3),
+        0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .entropy-label,
+    .mnemonic-label {
+      font-size: 11px;
+      color: #ffe4b5;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+    
+    .tag {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      border: 1px solid #8b6914;
+      color: #ffd700;
+      background: rgba(139,105,20,0.2);
+      text-shadow: none;
+    }
+
+    .helper {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #d2b48c;
+      line-height: 1.4;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    }
+    
+    .helper b {
+      color: #ffe4b5;
+    }
+
+    .warning {
+      font-size: 10px;
+      color: #ff6b6b;
+      margin-top: 2px;
+    }
+    
+    .ok {
+      color: #90ee90;
+      text-shadow: 0 0 8px rgba(144, 238, 144, 0.4);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .slots {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+    
+    @media (max-width: 900px) {
+      .slots {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .app-container {
+        padding: 10px 15px;
+      }
+      .slots {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="card-panel">
+      <h1>
+        <span class="logo">♣</span>
+        扑克牌助记词生成器
+      </h1>
+      <div class="subtitle">
+        全程离线 . 通过随机洗牌和抽取 24 张扑克牌生成 128 位 Entropy . 自动推导 BIP39 12 词助记词
+      </div>
+
+      <div class="layout">
+        <div>
+          <div class="controls">
+            <div class="button-group">
+              <button id="shuffleBtn">
+                <span class="icon">🔀</span>
+                洗牌并重置
+              </button>
+              <button id="drawOneBtn">
+                <span class="icon">🃏</span>
+                抽一张
+              </button>
+              <button id="autoDrawBtn">
+                <span class="icon">⚡</span>
+                一键抽满 24 张
+              </button>
+              <button id="resetBtn" class="secondary">
+                <span class="icon">♻️</span>
+                清空重新开始
+              </button>
+            </div>
+            <div class="status-text" id="drawStatus">
+              当前已抽 0 / 24 张
+            </div>
+          </div>
+
+          <div class="deck-and-slots">
+            <div class="slots" id="slotsContainer">
+              <!-- 24 slots will be created by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="info-panel">
+            <div class="info-row">
+              <div>抽牌状态</div>
+              <div><strong id="statusTextShort">未开始</strong></div>
+            </div>
+            <div class="info-row" id="cryptoStatusRow">
+              <div>浏览器加密支持</div>
+              <div id="cryptoSupportText" class="ok">检测中</div>
+            </div>
+            <div>
+              <div class="entropy-label">
+                <span>Entropy 十六进制(128 位)</span>
+                <span class="tag">只读 . 本地计算</span>
+              </div>
+              <div class="entropy-box" id="entropyBox">
+                抽满 24 张牌后 . 系统会在本地计算一段 128 位随机 Entropy . 并显示为十六进制字符串
+              </div>
+            </div>
+            <div>
+              <div class="mnemonic-label">
+                <span>BIP39 助记词(12 个英文单词)</span>
+                <span class="tag">本地 SHA256 + BIP39</span>
+              </div>
+              <div class="mnemonic-box" id="mnemonicBox">
+                还未生成助记词 . 请先通过洗牌和抽牌获得 24 张随机扑克牌
+              </div>
+            </div>
+            <div class="helper">
+              <b>安全提示</b><br />
+              1. 建议在完全离线环境中打开此页面 . 例如拔掉网线 . 关闭 WiFi<br />
+              2. 生成的助记词不要截图 . 不要复制到联网设备 . 请用纸或金属板记录<br />
+              3. 你可以多洗几次牌 . 或多次抽牌重来 . 直到自己满意为止
+              <div id="shaWarning" class="warning" style="display:none;">
+                当前浏览器不支持 crypto.subtle . 无法在本地计算 SHA256 . 页面只会生成 Entropy . 你可以将 Entropy 拷贝到其他离线 BIP39 工具中生成助记词
+              </div>
+            </div>
+          </div>
+          <div class="deck-area">
+            <div class="deck-visual" id="deckVisual"></div>
+            <div class="deck-label" id="deckLabel">
+              剩余牌数: 52
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 完整 BIP39 英文词表(标准 2048 个单词)
+    // 注意: 这份列表可以离线使用 . 只在本地内存中参与索引
+    const BIP39_ENGLISH_WORDLIST = [
+      "abandon","ability","able","about","above","absent","absorb","abstract","absurd","abuse",
+      "access","accident","account","accuse","achieve","acid","acoustic","acquire","across","act",
+      "action","actor","actress","actual","adapt","add","addict","address","adjust","admit",
+      "adult","advance","advice","aerobic","affair","afford","afraid","again","age","agent",
+      "agree","ahead","aim","air","airport","aisle","alarm","album","alcohol","alert",
+      "alien","all","alley","allow","almost","alone","alpha","already","also","alter",
+      "always","amateur","amazing","among","amount","amused","analyst","anchor","ancient","anger",
+      "angle","angry","animal","ankle","announce","annual","another","answer","antenna","antique",
+      "anxiety","any","apart","apology","appear","apple","approve","april","arch","arctic",
+      "area","arena","argue","arm","armed","armor","army","around","arrange","arrest",
+      "arrive","arrow","art","artefact","artist","artwork","ask","aspect","assault","asset",
+      "assist","assume","asthma","athlete","atom","attack","attend","attitude","attract","auction",
+      "audit","august","aunt","author","auto","autumn","average","avocado","avoid","awake",
+      "aware","away","awesome","awful","awkward","axis","baby","bachelor","bacon","badge",
+      "bag","balance","balcony","ball","bamboo","banana","banner","bar","barely","bargain",
+      "barrel","base","basic","basket","battle","beach","bean","beauty","because","become",
+      "beef","before","begin","behave","behind","believe","below","belt","bench","benefit",
+      "best","betray","better","between","beyond","bicycle","bid","bike","bind","biology",
+      "bird","birth","bitter","black","blade","blame","blanket","blast","bleak","bless",
+      "blind","blood","blossom","blouse","blue","blur","blush","board","boat","body",
+      "boil","bomb","bone","bonus","book","boost","border","boring","borrow","boss",
+      "bottom","bounce","box","boy","bracket","brain","brand","brass","brave","bread",
+      "breeze","brick","bridge","brief","bright","bring","brisk","broccoli","broken","bronze",
+      "broom","brother","brown","brush","bubble","buddy","budget","buffalo","build","bulb",
+      "bulk","bullet","bundle","bunker","burden","burger","burst","bus","business","busy",
+      "butter","buyer","buzz","cabbage","cabin","cable","cactus","cage","cake","call",
+      "calm","camera","camp","can","canal","cancel","candy","cannon","canoe","canvas",
+      "canyon","capable","capital","captain","car","carbon","card","cargo","carpet","carry",
+      "cart","case","cash","casino","castle","casual","cat","catalog","catch","category",
+      "cattle","caught","cause","caution","cave","ceiling","celery","cement","census","century",
+      "cereal","certain","chair","chalk","champion","change","chaos","chapter","charge","chase",
+      "chat","cheap","check","cheese","chef","cherry","chest","chicken","chief","child",
+      "chimney","choice","choose","chronic","chuckle","chunk","churn","cigar","cinnamon","circle",
+      "citizen","city","civil","claim","clap","clarify","claw","clay","clean","clerk",
+      "clever","click","client","cliff","climb","clinic","clip","clock","clog","close",
+      "cloth","cloud","clown","club","clump","cluster","clutch","coach","coast","coconut",
+      "code","coffee","coil","coin","collect","color","column","combine","come","comfort",
+      "comic","common","company","concert","conduct","confirm","congress","connect","consider","control",
+      "convince","cook","cool","copper","copy","coral","core","corn","correct","cost",
+      "cotton","couch","country","couple","course","cousin","cover","coyote","crack","cradle",
+      "craft","cram","crane","crash","crater","crawl","crazy","cream","credit","creek",
+      "crew","cricket","crime","crisp","critic","crop","cross","crouch","crowd","crucial",
+      "cruel","cruise","crumble","crunch","crush","cry","crystal","cube","culture","cup",
+      "cupboard","curious","current","curtain","curve","cushion","custom","cute","cycle","dad",
+      "damage","damp","dance","danger","daring","dash","daughter","dawn","day","deal",
+      "debate","debris","decade","december","decide","decline","decorate","decrease","deer","defense",
+      "define","defy","degree","delay","deliver","demand","demise","denial","dentist","deny",
+      "depart","depend","deposit","depth","deputy","derive","describe","desert","design","desk",
+      "despair","destroy","detail","detect","develop","device","devote","diagram","dial","diamond",
+      "diary","dice","diesel","diet","differ","digital","dignity","dilemma","dinner","dinosaur",
+      "direct","dirt","disagree","discover","disease","dish","dismiss","disorder","display","distance",
+      "divert","divide","divorce","dizzy","doctor","document","dog","doll","dolphin","domain",
+      "donate","donkey","donor","door","dose","double","dove","draft","dragon","drama",
+      "drastic","draw","dream","dress","drift","drill","drink","drip","drive","drop",
+      "drum","dry","duck","dumb","dune","during","dust","dutch","duty","dwarf",
+      "dynamic","eager","eagle","early","earn","earth","easily","east","easy","echo",
+      "ecology","economy","edge","edit","educate","effort","egg","eight","either","elbow",
+      "elder","electric","elegant","element","elephant","elevator","elite","else","embark","embody",
+      "embrace","emerge","emotion","employ","empower","empty","enable","enact","end","endless",
+      "endorse","enemy","energy","enforce","engage","engine","enhance","enjoy","enlist","enough",
+      "enrich","enroll","ensure","enter","entire","entry","envelope","episode","equal","equip",
+      "era","erase","erode","erosion","error","erupt","escape","essay","essence","estate",
+      "eternal","ethics","evidence","evil","evoke","evolve","exact","example","excess","exchange",
+      "excite","exclude","excuse","execute","exercise","exhaust","exhibit","exile","exist","exit",
+      "exotic","expand","expect","expire","explain","expose","express","extend","extra","eye",
+      "eyebrow","fabric","face","faculty","fade","faint","faith","fall","false","fame",
+      "family","famous","fan","fancy","fantasy","farm","fashion","fat","fatal","father",
+      "fatigue","fault","favorite","feature","february","federal","fee","feed","feel","female",
+      "fence","festival","fetch","fever","few","fiber","fiction","field","figure","file",
+      "film","filter","final","find","fine","finger","finish","fire","firm","first",
+      "fiscal","fish","fit","fitness","fix","flag","flame","flash","flat","flavor",
+      "flee","flight","flip","float","flock","floor","flower","fluid","flush","fly",
+      "foam","focus","fog","foil","fold","follow","food","foot","force","forest",
+      "forget","fork","fortune","forum","forward","fossil","foster","found","fox","fragile",
+      "frame","frequent","fresh","friend","fringe","frog","front","frost","frown","frozen",
+      "fruit","fuel","fun","funny","furnace","fury","future","gadget","gain","galaxy",
+      "gallery","game","gap","garage","garbage","garden","garlic","garment","gas","gasp",
+      "gate","gather","gauge","gaze","general","genius","genre","gentle","genuine","gesture",
+      "ghost","giant","gift","giggle","ginger","giraffe","girl","give","glad","glance",
+      "glare","glass","glide","glimpse","globe","gloom","glory","glove","glow","glue",
+      "goat","goddess","gold","good","goose","gorilla","gospel","gossip","govern","gown",
+      "grab","grace","grain","grant","grape","grass","gravity","great","green","grid",
+      "grief","grit","grocery","group","grow","grunt","guard","guess","guide","guilt",
+      "guitar","gun","gym","habit","hair","half","hammer","hamster","hand","happy",
+      "harbor","hard","harsh","harvest","hat","have","hawk","hazard","head","health",
+      "heart","heavy","hedgehog","height","hello","helmet","help","hen","hero","hidden",
+      "high","hill","hint","hip","hire","history","hobby","hockey","hold","hole",
+      "holiday","hollow","home","honey","hood","hope","horn","horror","horse","hospital",
+      "host","hotel","hour","hover","hub","huge","human","humble","humor","hundred",
+      "hungry","hunt","hurdle","hurry","hurt","husband","hybrid","ice","icon","idea",
+      "identify","idle","ignore","ill","illegal","illness","image","imitate","immense","immune",
+      "impact","impose","improve","impulse","inch","include","income","increase","index","indicate",
+      "indoor","industry","infant","inflict","inform","inhale","inherit","initial","inject","injury",
+      "inmate","inner","innocent","input","inquiry","insane","insect","inside","inspire","install",
+      "intact","interest","into","invest","invite","involve","iron","island","isolate","issue",
+      "item","ivory","jacket","jaguar","jar","jazz","jealous","jeans","jelly","jewel",
+      "job","join","joke","journey","joy","judge","juice","jump","jungle","junior",
+      "junk","just","kangaroo","keen","keep","ketchup","key","kick","kid","kidney",
+      "kind","kingdom","kiss","kit","kitchen","kite","kitten","kiwi","knee","knife",
+      "knock","know","lab","label","labor","ladder","lady","lake","lamp","language",
+      "laptop","large","later","latin","laugh","laundry","lava","law","lawn","lawsuit",
+      "layer","lazy","leader","leaf","learn","leave","lecture","left","leg","legal",
+      "legend","leisure","lemon","lend","length","lens","leopard","lesson","letter","level",
+      "liar","liberty","library","license","life","lift","light","like","limb","limit",
+      "link","lion","liquid","list","little","live","lizard","load","loan","lobster",
+      "local","lock","logic","lonely","long","loop","lottery","loud","lounge","love",
+      "loyal","lucky","luggage","lumber","lunar","lunch","luxury","lyrics","machine","mad",
+      "magic","magnet","maid","mail","main","major","make","mammal","man","manage",
+      "mandate","mango","mansion","manual","maple","marble","march","margin","marine","market",
+      "marriage","mask","mass","master","match","material","math","matrix","matter","maximum",
+      "maze","meadow","mean","measure","meat","mechanic","medal","media","melody","melt",
+      "member","memory","mention","menu","mercy","merge","merit","merry","mesh","message",
+      "metal","method","middle","midnight","milk","million","mimic","mind","minimum","minor",
+      "minute","miracle","mirror","misery","miss","mistake","mix","mixed","mixture","mobile",
+      "model","modify","mom","moment","monitor","monkey","monster","month","moon","moral",
+      "more","morning","mosquito","mother","motion","motor","mountain","mouse","move","movie",
+      "much","muffin","mule","multiply","muscle","museum","mushroom","music","must","mutual",
+      "myself","mystery","myth","naive","name","napkin","narrow","nasty","nation","nature",
+      "near","neck","need","negative","neglect","neither","nephew","nerve","nest","net",
+      "network","neutral","never","news","next","nice","night","noble","noise","nominee",
+      "noodle","normal","north","nose","notable","note","nothing","notice","novel","now",
+      "nuclear","number","nurse","nut","oak","obey","object","oblige","obscure","observe",
+      "obtain","obvious","occur","ocean","october","odor","off","offer","office","often",
+      "oil","okay","old","olive","olympic","omit","once","one","onion","online",
+      "only","open","opera","opinion","oppose","option","orange","orbit","orchard","order",
+      "ordinary","organ","orient","original","orphan","ostrich","other","outdoor","outer","output",
+      "outside","oval","oven","over","own","owner","oxygen","oyster","ozone","pact",
+      "paddle","page","pair","palace","palm","panda","panel","panic","panther","paper",
+      "parade","parent","park","parrot","party","pass","patch","path","patient","patrol",
+      "pattern","pause","pave","payment","peace","peanut","pear","peasant","pelican","pen",
+      "penalty","pencil","people","pepper","perfect","permit","person","pet","phone","photo",
+      "phrase","physical","piano","picnic","picture","piece","pig","pigeon","pill","pilot",
+      "pink","pioneer","pipe","pistol","pitch","pizza","place","planet","plastic","plate",
+      "play","please","pledge","pluck","plug","plunge","poem","poet","point","polar",
+      "pole","police","pond","pony","pool","popular","portion","position","possible","post",
+      "potato","pottery","poverty","powder","power","practice","praise","predict","prefer","prepare",
+      "present","pretty","prevent","price","pride","primary","print","priority","prison","private",
+      "prize","problem","process","produce","profit","program","project","promote","proof","property",
+      "prosper","protect","proud","provide","public","pudding","pull","pulp","pulse","pumpkin",
+      "punch","pupil","puppy","purchase","purity","purpose","purse","push","put","puzzle",
+      "pyramid","quality","quantum","quarter","question","quick","quit","quiz","quote","rabbit",
+      "raccoon","race","rack","radar","radio","rail","rain","raise","rally","ramp",
+      "ranch","random","range","rapid","rare","rate","rather","raven","raw","razor",
+      "ready","real","reason","rebel","rebuild","recall","receive","recipe","record","recycle",
+      "reduce","reflect","reform","refuse","region","regret","regular","reject","relax","release",
+      "relief","rely","remain","remember","remind","remove","render","renew","rent","reopen",
+      "repair","repeat","replace","report","require","rescue","resemble","resist","resource","response",
+      "result","retire","retreat","return","reunion","reveal","review","reward","rhythm","rib",
+      "ribbon","rice","rich","ride","ridge","rifle","right","rigid","ring","riot",
+      "ripple","risk","ritual","rival","river","road","roast","robot","robust","rocket",
+      "romance","roof","rookie","room","rose","rotate","rough","round","route","royal",
+      "rubber","rude","rug","rule","run","runway","rural","sad","saddle","sadness",
+      "safe","sail","salad","salmon","salon","salt","salute","same","sample","sand",
+      "satisfy","satoshi","sauce","sausage","save","say","scale","scan","scare","scatter",
+      "scene","scheme","school","science","scissors","scorpion","scout","scrap","screen","script",
+      "scrub","sea","search","season","seat","second","secret","section","security","seed",
+      "seek","segment","select","sell","seminar","senior","sense","sentence","series","service",
+      "session","settle","setup","seven","shadow","shaft","shallow","share","shed","shell",
+      "sheriff","shield","shift","shine","ship","shiver","shock","shoe","shoot","shop",
+      "short","shoulder","shove","shrimp","shrug","shuffle","shy","sibling","sick","side",
+      "siege","sight","sign","silent","silk","silly","silver","similar","simple","since",
+      "sing","siren","sister","situate","six","size","skate","sketch","ski","skill",
+      "skin","skirt","skull","slab","slam","sleep","slender","slice","slide","slight",
+      "slim","slogan","slot","slow","slush","small","smart","smile","smoke","smooth",
+      "snack","snake","snap","sniff","snow","soap","soccer","social","sock","soda",
+      "soft","solar","soldier","solid","solution","solve","someone","song","soon","sorry",
+      "sort","soul","sound","soup","source","south","space","spare","spatial","spawn",
+      "speak","special","speed","spell","spend","sphere","spice","spider","spike","spin",
+      "spirit","split","spoil","sponsor","spoon","sport","spot","spray","spread","spring",
+      "spy","square","squeeze","squirrel","stable","stadium","staff","stage","stairs","stamp",
+      "stand","start","state","stay","steak","steel","stem","step","stereo","stick",
+      "still","sting","stock","stomach","stone","stool","story","stove","strategy","street",
+      "strike","strong","struggle","student","stuff","stumble","style","subject","submit","subway",
+      "success","such","sudden","suffer","sugar","suggest","suit","summer","sun","sunny",
+      "sunset","super","supply","supreme","sure","surface","surge","surprise","surround","survey",
+      "suspect","sustain","swallow","swamp","swap","swarm","swear","sweet","swift","swim",
+      "swing","switch","sword","symbol","symptom","syrup","system","table","tackle","tag",
+      "tail","talent","talk","tank","tape","target","task","taste","tattoo","taxi",
+      "teach","team","tell","ten","tenant","tennis","tent","term","test","text",
+      "thank","that","theme","then","theory","there","they","thing","this","thought",
+      "three","thrive","throw","thumb","thunder","ticket","tide","tiger","tilt","timber",
+      "time","tiny","tip","tired","tissue","title","toast","tobacco","today","toddler",
+      "toe","together","toilet","token","tomato","tomorrow","tone","tongue","tonight","tool",
+      "tooth","top","topic","topple","torch","tornado","tortoise","toss","total","tourist",
+      "toward","tower","town","toy","track","trade","traffic","tragic","train","transfer",
+      "trap","trash","travel","tray","treat","tree","trend","trial","tribe","trick",
+      "trigger","trim","trip","trophy","trouble","truck","true","truly","trumpet","trust",
+      "truth","try","tube","tuition","tumble","tuna","tunnel","turkey","turn","turtle",
+      "twelve","twenty","twice","twin","twist","two","type","typical","ugly","umbrella",
+      "unable","unaware","uncle","uncover","under","undo","unfair","unfold","unhappy","uniform",
+      "unique","unit","universe","unknown","unlock","until","unusual","unveil","update","upgrade",
+      "uphold","upon","upper","upset","urban","urge","usage","use","used","useful",
+      "useless","usual","utility","vacant","vacuum","vague","valid","valley","valve","van",
+      "vanish","vapor","various","vast","vault","vehicle","velvet","vendor","venture","venue",
+      "verb","verify","version","very","vessel","veteran","viable","vibrant","vicious","victory",
+      "video","view","village","vintage","violin","virtual","virus","visa","visit","visual",
+      "vital","vivid","vocal","voice","void","volcano","volume","vote","voyage","wage",
+      "wagon","wait","walk","wall","walnut","want","warfare","warm","warrior","wash",
+      "wasp","waste","water","wave","way","wealth","weapon","wear","weasel","weather",
+      "web","wedding","weekend","weird","welcome","west","wet","whale","what","wheat",
+      "wheel","when","where","whip","whisper","wide","width","wife","wild","will",
+      "win","window","wine","wing","wink","winner","winter","wire","wisdom","wise",
+      "wish","witness","wolf","woman","wonder","wood","wool","word","work","world",
+      "worry","worth","wrap","wreck","wrestle","wrist","write","wrong","yard","year",
+      "yellow","you","young","youth","zebra","zero","zone","zoo"
+    ];
+
+    const TOTAL_NEED_CARDS = 24;
+
+    const SUIT_SYMBOLS = ["♠", "♥", "♣", "♦"];
+    const SUIT_NAMES = ["spades", "hearts", "clubs", "diamonds"];
+    const RANK_LABELS = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+
+    let deck = [];
+    let slotCards = new Array(TOTAL_NEED_CARDS).fill(null);
+    let autoDrawing = false;
+    let hasSubtleCrypto = !!(window.crypto && window.crypto.subtle);
+
+    const slotsContainer = document.getElementById("slotsContainer");
+    const shuffleBtn = document.getElementById("shuffleBtn");
+    const drawOneBtn = document.getElementById("drawOneBtn");
+    const autoDrawBtn = document.getElementById("autoDrawBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const drawStatus = document.getElementById("drawStatus");
+    const deckVisual = document.getElementById("deckVisual");
+    const deckLabel = document.getElementById("deckLabel");
+    const entropyBox = document.getElementById("entropyBox");
+    const mnemonicBox = document.getElementById("mnemonicBox");
+    const statusTextShort = document.getElementById("statusTextShort");
+    const cryptoSupportText = document.getElementById("cryptoSupportText");
+    const shaWarning = document.getElementById("shaWarning");
+
+    function initSlots() {
+      slotsContainer.innerHTML = "";
+      for (let i = 0; i < TOTAL_NEED_CARDS; i++) {
+        const slot = document.createElement("div");
+        slot.className = "card-slot";
+        const indexLabel = document.createElement("div");
+        indexLabel.className = "slot-index";
+        indexLabel.textContent = i + 1;
+        slot.appendChild(indexLabel);
+        createManualControls(slot, i);
+        slotsContainer.appendChild(slot);
+      }
+      slotCards = new Array(TOTAL_NEED_CARDS).fill(null);
+    }
+
+    function getSelectedCardIds() {
+      const selectedIds = new Set();
+      for (let i = 0; i < TOTAL_NEED_CARDS; i++) {
+        if (slotCards[i]) {
+          selectedIds.add(slotCards[i].id);
+        }
+      }
+      return selectedIds;
+    }
+
+    function updateAllDropdowns() {
+      const selectedIds = getSelectedCardIds();
+      const slots = slotsContainer.children;
+      
+      for (let i = 0; i < slots.length; i++) {
+        const slot = slots[i];
+        const suitSelect = slot.querySelector("select[data-role='suit']");
+        const rankSelect = slot.querySelector("select[data-role='rank']");
+        if (!suitSelect || !rankSelect) continue;
+        
+        const currentCard = slotCards[i];
+        const currentSuitValue = suitSelect.value;
+        const currentRankValue = rankSelect.value;
+        
+        // 更新花色下拉列表
+        suitSelect.innerHTML = "";
+        const suitPlaceholder = document.createElement("option");
+        suitPlaceholder.value = "";
+        suitPlaceholder.textContent = "花色";
+        suitPlaceholder.disabled = true;
+        suitPlaceholder.selected = true;
+        suitSelect.appendChild(suitPlaceholder);
+        
+        SUIT_SYMBOLS.forEach((symbol, suitIdx) => {
+          // 检查该花色下是否有可用的点数
+          let hasAvailableRank = false;
+          for (let rankIdx = 0; rankIdx < 13; rankIdx++) {
+            const cardId = suitIdx * 13 + rankIdx;
+            // 如果这张牌未被选中，或者就是当前槽位的牌，则可用
+            if (!selectedIds.has(cardId) || (currentCard && currentCard.id === cardId)) {
+              hasAvailableRank = true;
+              break;
+            }
+          }
+          
+          if (hasAvailableRank) {
+            const opt = document.createElement("option");
+            opt.value = String(suitIdx);
+            opt.textContent = symbol;
+            suitSelect.appendChild(opt);
+          }
+        });
+        
+        // 如果之前选中的花色仍然可用，恢复它
+        if (currentSuitValue && suitSelect.querySelector(`option[value="${currentSuitValue}"]`)) {
+          suitSelect.value = currentSuitValue;
+        } else {
+          suitSelect.value = "";
+        }
+        
+        // 更新点数下拉列表（基于当前选中的花色）
+        const selectedSuit = suitSelect.value;
+        rankSelect.innerHTML = "";
+        const rankPlaceholder = document.createElement("option");
+        rankPlaceholder.value = "";
+        rankPlaceholder.textContent = "点数";
+        rankPlaceholder.disabled = true;
+        rankPlaceholder.selected = true;
+        rankSelect.appendChild(rankPlaceholder);
+        
+        if (selectedSuit !== "") {
+          const suitIdx = parseInt(selectedSuit, 10);
+          RANK_LABELS.forEach((label, rankIdx) => {
+            const cardId = suitIdx * 13 + rankIdx;
+            // 如果这张牌未被选中，或者就是当前槽位的牌，则可用
+            if (!selectedIds.has(cardId) || (currentCard && currentCard.id === cardId)) {
+              const opt = document.createElement("option");
+              opt.value = String(rankIdx);
+              opt.textContent = label;
+              rankSelect.appendChild(opt);
+            }
+          });
+          
+          // 如果之前选中的点数仍然可用，恢复它
+          if (currentRankValue && rankSelect.querySelector(`option[value="${currentRankValue}"]`)) {
+            rankSelect.value = currentRankValue;
+          } else {
+            rankSelect.value = "";
+          }
+        }
+        
+        // 添加花色变化监听器，更新点数选项
+        const existingHandler = suitSelect._changeHandler;
+        if (existingHandler) {
+          suitSelect.removeEventListener("change", existingHandler);
+        }
+        const changeHandler = () => {
+          // 重新获取最新的已选牌信息
+          const latestSelectedIds = getSelectedCardIds();
+          const latestCurrentCard = slotCards[i];
+          
+          const newSuit = suitSelect.value;
+          rankSelect.innerHTML = "";
+          const newRankPlaceholder = document.createElement("option");
+          newRankPlaceholder.value = "";
+          newRankPlaceholder.textContent = "点数";
+          newRankPlaceholder.disabled = true;
+          newRankPlaceholder.selected = true;
+          rankSelect.appendChild(newRankPlaceholder);
+          
+          if (newSuit !== "") {
+            const suitIdx = parseInt(newSuit, 10);
+            RANK_LABELS.forEach((label, rankIdx) => {
+              const cardId = suitIdx * 13 + rankIdx;
+              // 如果这张牌未被选中，或者就是当前槽位的牌，则可用
+              if (!latestSelectedIds.has(cardId) || (latestCurrentCard && latestCurrentCard.id === cardId)) {
+                const opt = document.createElement("option");
+                opt.value = String(rankIdx);
+                opt.textContent = label;
+                rankSelect.appendChild(opt);
+              }
+            });
+          }
+        };
+        suitSelect._changeHandler = changeHandler;
+        suitSelect.addEventListener("change", changeHandler);
+      }
+    }
+
+    function createManualControls(slot, slotIndex) {
+      const controls = document.createElement("div");
+      controls.className = "card-slot-controls";
+
+      const suitSelect = document.createElement("select");
+      suitSelect.setAttribute("data-role", "suit");
+      const suitPlaceholder = document.createElement("option");
+      suitPlaceholder.value = "";
+      suitPlaceholder.textContent = "花色";
+      suitPlaceholder.disabled = true;
+      suitPlaceholder.selected = true;
+      suitSelect.appendChild(suitPlaceholder);
+      SUIT_SYMBOLS.forEach((symbol, idx) => {
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = symbol;
+        suitSelect.appendChild(opt);
+      });
+
+      const rankSelect = document.createElement("select");
+      rankSelect.setAttribute("data-role", "rank");
+      const rankPlaceholder = document.createElement("option");
+      rankPlaceholder.value = "";
+      rankPlaceholder.textContent = "点数";
+      rankPlaceholder.disabled = true;
+      rankPlaceholder.selected = true;
+      rankSelect.appendChild(rankPlaceholder);
+      RANK_LABELS.forEach((label, idx) => {
+        const opt = document.createElement("option");
+        opt.value = String(idx);
+        opt.textContent = label;
+        rankSelect.appendChild(opt);
+      });
+
+      const applyBtn = document.createElement("button");
+      applyBtn.type = "button";
+      applyBtn.className = "secondary manual-apply-btn";
+      applyBtn.textContent = "设置";
+
+      applyBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (autoDrawing) return;
+        const suitValue = suitSelect.value;
+        const rankValue = rankSelect.value;
+        if (suitValue === "" || rankValue === "") {
+          alert("请先选择花色和点数");
+          return;
+        }
+        applyManualCard(
+          slotIndex,
+          parseInt(suitValue, 10),
+          parseInt(rankValue, 10)
+        );
+      });
+
+      controls.appendChild(suitSelect);
+      controls.appendChild(rankSelect);
+      controls.appendChild(applyBtn);
+      slot.appendChild(controls);
+    }
+
+    function getDrawnCount() {
+      let count = 0;
+      for (let i = 0; i < TOTAL_NEED_CARDS; i++) {
+        if (slotCards[i]) count++;
+      }
+      return count;
+    }
+
+    function resetDeck() {
+      deck = [];
+      for (let i = 0; i < 52; i++) {
+        const suitIndex = Math.floor(i / 13);
+        const rankIndex = i % 13;
+        deck.push({
+          id: i,
+          suitIndex,
+          rankIndex
+        });
+      }
+      slotCards = new Array(TOTAL_NEED_CARDS).fill(null);
+      updateDeckLabel();
+      updateDeckVisual();
+      updateDrawStatus();
+      clearSlotsVisual();
+      updateAllDropdowns();
+      entropyBox.textContent = "抽满 24 张牌后 . 系统会在本地计算一段 128 位随机 Entropy . 并显示为十六进制字符串";
+      mnemonicBox.textContent = "还未生成助记词 . 请先通过洗牌和抽牌获得 24 张随机扑克牌";
+      statusTextShort.textContent = "未开始";
+      drawOneBtn.disabled = false;
+      autoDrawBtn.disabled = false;
+    }
+
+    function fisherYatesShuffle(array) {
+      const cryptoObj = window.crypto || window.msCrypto;
+      if (cryptoObj && cryptoObj.getRandomValues) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const rand = new Uint32Array(1);
+          cryptoObj.getRandomValues(rand);
+          const j = rand[0] % (i + 1);
+          const temp = array[i];
+          array[i] = array[j];
+          array[j] = temp;
+        }
+      } else {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = array[i];
+          array[i] = array[j];
+          array[j] = temp;
+        }
+      }
+    }
+
+    function setAllButtonsDisabled(disabled) {
+      shuffleBtn.disabled = disabled;
+      drawOneBtn.disabled = disabled;
+      autoDrawBtn.disabled = disabled;
+      resetBtn.disabled = disabled;
+      
+      // 禁用所有槽位中的"设置"按钮
+      const slots = slotsContainer.children;
+      for (let i = 0; i < slots.length; i++) {
+        const applyBtn = slots[i].querySelector("button.manual-apply-btn");
+        if (applyBtn) {
+          applyBtn.disabled = disabled;
+        }
+      }
+    }
+
+    function doShuffleWithAnimation() {
+      deckVisual.classList.add("shuffling");
+      statusTextShort.textContent = "正在洗牌 . 随机打乱 52 张牌";
+      setAllButtonsDisabled(true);
+      setTimeout(() => {
+        fisherYatesShuffle(deck);
+        deckVisual.classList.remove("shuffling");
+        updateDeckLabel();
+        updateDeckVisual();
+        clearSlotsVisual();
+        slotCards = new Array(TOTAL_NEED_CARDS).fill(null);
+        updateDrawStatus();
+        updateAllDropdowns();
+        entropyBox.textContent = "等待抽牌 . 抽满 24 张牌后会显示 Entropy";
+        mnemonicBox.textContent = "等待抽牌 . 抽满 24 张牌后会在本地推导助记词";
+        statusTextShort.textContent = "洗牌完成 . 可以开始抽牌了";
+        setAllButtonsDisabled(false);
+        // 根据当前状态重新设置按钮状态
+        const count = getDrawnCount();
+        autoDrawBtn.disabled = (count >= TOTAL_NEED_CARDS) || deck.length === 0;
+      }, 1200);
+    }
+
+    function updateDeckLabel() {
+      deckLabel.textContent = "剩余牌数: " + deck.length;
+    }
+
+    function updateDeckVisual() {
+      deckVisual.innerHTML = "";
+      if (!deck.length) {
+        return;
+      }
+
+      const maxVisible = 52;
+      const visibleCount = Math.min(deck.length, maxVisible);
+      const startIndex = deck.length - visibleCount;
+
+      for (let i = 0; i < visibleCount; i++) {
+        const card = deck[startIndex + i];
+        const t = visibleCount === 1 ? 0.5 : (i / (visibleCount - 1)); // 0 ~ 1
+        
+        // S形曲线：使用正弦函数创建S形路径
+        const offsetX = (t - 0.5) * 280 - 35; // 水平偏移范围280px, -35是卡片宽度的一半
+        const offsetY = -Math.sin((t - 0.5) * Math.PI * 2) * 140 - 60; // 垂直S形波动幅度增加到140px，整体上移10px
+        const angle = Math.sin((t - 0.5) * Math.PI * 1.5) * 35; // 角度随S形变化
+
+        const el = document.createElement("div");
+        el.className = "deck-card";
+        const baseTransform = `translate(${offsetX}px, ${offsetY}px) rotate(${angle}deg)`;
+        el.style.transform = baseTransform;
+        el.style.zIndex = String(1000 + i); // 确保后面的牌（上面的牌）有更高的z-index
+        el.dataset.baseTransform = baseTransform;
+        el.dataset.cardId = String(card.id);
+
+        el.addEventListener("mouseenter", (e) => {
+          e.stopPropagation();
+          el.style.transform = baseTransform + " translateY(-20px)";
+          el.style.boxShadow = "0 16px 35px rgba(0, 0, 0, 0.95)";
+          el.style.zIndex = "2000"; // 悬停时提升到最顶层
+        });
+        el.addEventListener("mouseleave", (e) => {
+          e.stopPropagation();
+          el.style.transform = baseTransform;
+          el.style.boxShadow = "";
+          el.style.zIndex = String(1000 + i); // 恢复原来的z-index
+        });
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          if (autoDrawing) return;
+          drawSpecificCard(card.id);
+        });
+
+        deckVisual.appendChild(el);
+      }
+    }
+
+    function updateDrawStatus() {
+      const count = getDrawnCount();
+      drawStatus.textContent = "当前已抽 " + count + " / " + TOTAL_NEED_CARDS + " 张";
+      if (count === 0) {
+        statusTextShort.textContent = "未开始";
+      } else if (count < TOTAL_NEED_CARDS) {
+        statusTextShort.textContent = "已抽 " + count + " 张 . 继续抽牌";
+      } else {
+        statusTextShort.textContent = "已抽满 24 张 . 已生成 Entropy 和助记词";
+      }
+      autoDrawBtn.disabled = (count >= TOTAL_NEED_CARDS) || deck.length === 0;
+    }
+
+    function clearSlotsVisual() {
+      const slots = slotsContainer.children;
+      for (let i = 0; i < slots.length; i++) {
+        const slot = slots[i];
+        slot.classList.remove("filled");
+        slotCards[i] = null;
+        while (slot.children.length > 2) {
+          slot.removeChild(slot.lastChild);
+        }
+        const suitSelect = slot.querySelector("select[data-role='suit']");
+        const rankSelect = slot.querySelector("select[data-role='rank']");
+        if (suitSelect) suitSelect.value = "";
+        if (rankSelect) rankSelect.value = "";
+      }
+      updateAllDropdowns();
+    }
+
+    function updateSlotVisual(slotIndex) {
+      const slot = slotsContainer.children[slotIndex];
+      if (!slot) return;
+      const card = slotCards[slotIndex];
+      if (card) {
+        slot.classList.add("filled");
+      } else {
+        slot.classList.remove("filled");
+      }
+      while (slot.children.length > 2) {
+        slot.removeChild(slot.lastChild);
+      }
+      if (card) {
+        const cardEl = createCardElement(card);
+        slot.appendChild(cardEl);
+      }
+    }
+
+    function applyManualCard(slotIndex, suitIndex, rankIndex) {
+      const newCardId = suitIndex * 13 + rankIndex;
+
+      for (let i = 0; i < TOTAL_NEED_CARDS; i++) {
+        if (i !== slotIndex && slotCards[i] && slotCards[i].id === newCardId) {
+          alert("该牌已经在第 " + (i + 1) + " 个位置使用 . 请先修改原位置的牌");
+          return;
+        }
+      }
+
+      const existingIndexInDeck = deck.findIndex((c) => c.id === newCardId);
+      if (existingIndexInDeck !== -1) {
+        deck.splice(existingIndexInDeck, 1);
+      }
+
+      const oldCard = slotCards[slotIndex];
+      if (oldCard) {
+        deck.push(oldCard);
+      }
+
+      slotCards[slotIndex] = {
+        id: newCardId,
+        suitIndex,
+        rankIndex
+      };
+
+      updateSlotVisual(slotIndex);
+      updateDeckLabel();
+      updateDeckVisual();
+      updateDrawStatus();
+      updateAllDropdowns();
+      computeEntropyAndMaybeMnemonic();
+    }
+
+    function createCardElement(card) {
+      const cardDiv = document.createElement("div");
+      const suitSymbol = SUIT_SYMBOLS[card.suitIndex];
+      const rankLabel = RANK_LABELS[card.rankIndex];
+      const suitClass = "suit-" + SUIT_NAMES[card.suitIndex];
+
+      cardDiv.className = "card card-front " + suitClass + " card-appear";
+
+      const rankTop = document.createElement("div");
+      rankTop.className = "rank";
+      rankTop.textContent = rankLabel;
+
+      const suitTop = document.createElement("div");
+      suitTop.className = "suit";
+      suitTop.textContent = suitSymbol;
+
+      const center = document.createElement("div");
+      center.className = "center-mark";
+      center.textContent = suitSymbol;
+
+      const rankBottom = document.createElement("div");
+      rankBottom.className = "rank bottom";
+      rankBottom.textContent = rankLabel;
+
+      const suitBottom = document.createElement("div");
+      suitBottom.className = "suit bottom";
+      suitBottom.textContent = suitSymbol;
+
+      cardDiv.appendChild(rankTop);
+      cardDiv.appendChild(suitTop);
+      cardDiv.appendChild(center);
+      cardDiv.appendChild(rankBottom);
+      cardDiv.appendChild(suitBottom);
+
+      return cardDiv;
+    }
+
+    function drawOneCard() {
+      if (getDrawnCount() >= TOTAL_NEED_CARDS) return;
+      if (deck.length === 0) return;
+
+      const index = slotCards.findIndex((c) => !c);
+      if (index === -1) return;
+
+      const card = deck.pop();
+      slotCards[index] = card;
+      updateSlotVisual(index);
+
+      updateDeckLabel();
+      updateDeckVisual();
+      updateDrawStatus();
+      updateAllDropdowns();
+      computeEntropyAndMaybeMnemonic();
+    }
+
+    function autoDrawAll() {
+      // 全新一键抽满逻辑：不再使用递归和定时器，避免“卡死”风险
+      if (autoDrawing) return;
+
+      let count = getDrawnCount();
+      if (count >= TOTAL_NEED_CARDS) return;
+      if (deck.length === 0) return;
+
+      autoDrawing = true;
+      drawOneBtn.disabled = true;
+      autoDrawBtn.disabled = true;
+      statusTextShort.textContent = "正在使用一键抽满 . 自动补全剩余牌";
+
+      for (let i = 0; i < TOTAL_NEED_CARDS; i++) {
+        if (count >= TOTAL_NEED_CARDS || deck.length === 0) {
+          break;
+        }
+        if (!slotCards[i]) {
+          const card = deck.pop();
+          slotCards[i] = card;
+          updateSlotVisual(i);
+          count++;
+        }
+      }
+
+      updateDeckLabel();
+      updateDeckVisual();
+      updateDrawStatus();
+      updateAllDropdowns();
+      computeEntropyAndMaybeMnemonic();
+
+      autoDrawing = false;
+      drawOneBtn.disabled = false;
+      autoDrawBtn.disabled = (getDrawnCount() >= TOTAL_NEED_CARDS) || deck.length === 0;
+    }
+
+    function drawSpecificCard(cardId) {
+      if (autoDrawing) return;
+      if (getDrawnCount() >= TOTAL_NEED_CARDS) return;
+      const slotIndex = slotCards.findIndex((c) => !c);
+      if (slotIndex === -1) return;
+
+      const deckIndex = deck.findIndex((c) => c.id === cardId);
+      if (deckIndex === -1) return;
+
+      const [card] = deck.splice(deckIndex, 1);
+      slotCards[slotIndex] = card;
+      updateSlotVisual(slotIndex);
+      updateDeckLabel();
+      updateDeckVisual();
+      updateDrawStatus();
+      updateAllDropdowns();
+      computeEntropyAndMaybeMnemonic();
+    }
+
+    function computeEntropyAndMaybeMnemonic() {
+      const count = getDrawnCount();
+      if (count < TOTAL_NEED_CARDS) {
+        entropyBox.textContent = "当前已抽 " + count + " 张 . 需要 24 张后再计算 Entropy";
+        mnemonicBox.textContent = "请先抽满 24 张牌 . 系统会在本地计算助记词";
+        return;
+      }
+
+      const bitsPerCard = 6;
+      let bitString = "";
+      for (let i = 0; i < TOTAL_NEED_CARDS; i++) {
+        const card = slotCards[i];
+        const index = card.id;
+        const bits = index.toString(2).padStart(bitsPerCard, "0");
+        bitString += bits;
+      }
+
+      if (bitString.length < 128) {
+        entropyBox.textContent = "内部错误 . 生成的比特长度不足 128 位";
+        mnemonicBox.textContent = "无法生成助记词";
+        return;
+      }
+
+      const entropyBits = bitString.slice(0, 128);
+      const entropyBytes = new Uint8Array(16);
+      for (let i = 0; i < 16; i++) {
+        const byteBits = entropyBits.slice(i * 8, i * 8 + 8);
+        entropyBytes[i] = parseInt(byteBits, 2);
+      }
+      let entropyHex = "";
+      for (let i = 0; i < entropyBytes.length; i++) {
+        entropyHex += entropyBytes[i].toString(16).padStart(2, "0");
+      }
+
+      entropyBox.textContent = entropyHex;
+
+      if (!hasSubtleCrypto) {
+        mnemonicBox.textContent = "浏览器不支持 crypto.subtle . 无法在本地计算 SHA256 . 你可以将上面的 Entropy 拷贝到其他离线 BIP39 工具中生成助记词";
+        return;
+      }
+
+      mnemonicBox.textContent = "正在本地计算助记词 . 请稍候";
+
+      window.crypto.subtle.digest("SHA-256", entropyBytes.buffer)
+        .then(digestBuffer => {
+          const hashBytes = new Uint8Array(digestBuffer);
+          const firstByteBits = hashBytes[0].toString(2).padStart(8, "0");
+          const checksumBits = firstByteBits.slice(0, 4);
+          const fullBits = entropyBits + checksumBits;
+          const words = [];
+          for (let i = 0; i < 12; i++) {
+            const segment = fullBits.slice(i * 11, i * 11 + 11);
+            const index = parseInt(segment, 2);
+            const w = BIP39_ENGLISH_WORDLIST[index];
+            words.push(w);
+          }
+          mnemonicBox.textContent = words.join(" ");
+        })
+        .catch(err => {
+          console.error(err);
+          mnemonicBox.textContent = "计算 SHA256 时出错 . 无法生成助记词 . 请尝试刷新页面或使用其他浏览器";
+        });
+    }
+
+    function setupCryptoStatus() {
+      if (hasSubtleCrypto) {
+        cryptoSupportText.textContent = "支持 . 助记词在本地计算";
+        cryptoSupportText.classList.add("ok");
+        shaWarning.style.display = "none";
+      } else {
+        cryptoSupportText.textContent = "不支持 . 仅生成 Entropy";
+        cryptoSupportText.classList.remove("ok");
+        cryptoSupportText.classList.add("warning");
+        shaWarning.style.display = "block";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initSlots();
+      resetDeck();
+      setupCryptoStatus();
+      updateDeckVisual();
+      // Automatically shuffle on page load for randomization
+      doShuffleWithAnimation();
+    });
+
+    shuffleBtn.addEventListener("click", () => {
+      if (autoDrawing) return;
+      resetDeck();
+      doShuffleWithAnimation();
+    });
+
+    drawOneBtn.addEventListener("click", () => {
+      drawOneCard();
+      if (getDrawnCount() >= TOTAL_NEED_CARDS) {
+        autoDrawBtn.disabled = true;
+      }
+    });
+
+    autoDrawBtn.addEventListener("click", () => {
+      autoDrawAll();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      if (autoDrawing) return;
+      resetDeck();
+      doShuffleWithAnimation();
+    });
+  </script>
+</body>
+</html>
