@@ -1678,17 +1678,15 @@
       doShuffleWithAnimation();
     });
 
-    downloadBtn.addEventListener("click", async () => {
+    downloadBtn.addEventListener("click", () => {
       try {
-        const url = "https://github.com/discountry/ritmex-webpages/raw/refs/heads/main/tools/cards/index.html";
         downloadBtn.disabled = true;
-        downloadBtn.textContent = "正在下载...";
+        const originalContent = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<span class="icon">⏳</span>正在下载...';
         
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error("下载失败");
-        }
-        const blob = await response.blob();
+        // 获取当前页面的完整HTML内容
+        const htmlContent = document.documentElement.outerHTML;
+        const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
         const blobUrl = URL.createObjectURL(blob);
         
         const link = document.createElement("a");
@@ -1699,13 +1697,15 @@
         link.click();
         document.body.removeChild(link);
         
-        URL.revokeObjectURL(blobUrl);
-        
-        downloadBtn.disabled = false;
-        downloadBtn.innerHTML = '<span class="icon">💾</span>下载应用到本地';
+        // 延迟释放URL，确保下载完成
+        setTimeout(() => {
+          URL.revokeObjectURL(blobUrl);
+          downloadBtn.disabled = false;
+          downloadBtn.innerHTML = originalContent;
+        }, 100);
       } catch (error) {
         console.error("下载失败:", error);
-        alert("下载失败，请稍后重试或手动访问: https://github.com/discountry/ritmex-webpages/raw/refs/heads/main/tools/cards/index.html");
+        alert("下载失败: " + error.message);
         downloadBtn.disabled = false;
         downloadBtn.innerHTML = '<span class="icon">💾</span>下载应用到本地';
       }
