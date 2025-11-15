@@ -1010,6 +1010,18 @@
     let slotCards = new Array(TOTAL_NEED_CARDS).fill(null);
     let autoDrawing = false;
     let hasSubtleCrypto = !!(window.crypto && window.crypto.subtle);
+    
+    // 交互数据收集器 - 用于增强熵源
+    const interactionData = {
+      mouseMovements: [], // 鼠标移动轨迹
+      clickPositions: [], // 点击位置
+      scrollPositions: [], // 滚动位置
+      keyPresses: [], // 按键事件
+      timestamps: [] // 各种事件的时间戳
+    };
+    
+    // 限制交互数据数组大小，避免内存过度占用
+    const MAX_INTERACTION_DATA = 1000;
 
     const slotsContainer = document.getElementById("slotsContainer");
     const shuffleBtn = document.getElementById("shuffleBtn");
@@ -1251,6 +1263,12 @@
         });
       }
       slotCards = new Array(TOTAL_NEED_CARDS).fill(null);
+      // 重置交互数据收集器
+      interactionData.mouseMovements = [];
+      interactionData.clickPositions = [];
+      interactionData.scrollPositions = [];
+      interactionData.keyPresses = [];
+      interactionData.timestamps = [];
       updateDeckLabel();
       updateDeckVisual();
       updateDrawStatus();
@@ -1442,13 +1460,22 @@
 
       const oldCard = slotCards[slotIndex];
       if (oldCard) {
-        deck.push(oldCard);
+        // 恢复旧牌到牌堆时，移除时间戳信息
+        deck.push({
+          id: oldCard.id,
+          suitIndex: oldCard.suitIndex,
+          rankIndex: oldCard.rankIndex
+        });
       }
 
+      // 记录手动设置牌的时间戳（精确到毫秒）
+      const timestamp = performance.now();
       slotCards[slotIndex] = {
         id: newCardId,
         suitIndex,
-        rankIndex
+        rankIndex,
+        timestamp: timestamp,
+        timestampMs: Date.now()
       };
 
       updateSlotVisual(slotIndex);
@@ -1504,7 +1531,13 @@
       if (index === -1) return;
 
       const card = deck.pop();
-      slotCards[index] = card;
+      // 记录抽牌时间戳（精确到毫秒）
+      const timestamp = performance.now(); // 使用高精度时间戳
+      slotCards[index] = {
+        ...card,
+        timestamp: timestamp,
+        timestampMs: Date.now() // 同时记录标准时间戳
+      };
       updateSlotVisual(index);
 
       updateDeckLabel();
@@ -1533,7 +1566,13 @@
         }
         if (!slotCards[i]) {
           const card = deck.pop();
-          slotCards[i] = card;
+          // 记录抽牌时间戳（精确到毫秒）
+          const timestamp = performance.now();
+          slotCards[i] = {
+            ...card,
+            timestamp: timestamp,
+            timestampMs: Date.now()
+          };
           updateSlotVisual(i);
           count++;
         }
@@ -1560,13 +1599,117 @@
       if (deckIndex === -1) return;
 
       const [card] = deck.splice(deckIndex, 1);
-      slotCards[slotIndex] = card;
+      // 记录抽牌时间戳（精确到毫秒）
+      const timestamp = performance.now();
+      slotCards[slotIndex] = {
+        ...card,
+        timestamp: timestamp,
+        timestampMs: Date.now()
+      };
       updateSlotVisual(slotIndex);
       updateDeckLabel();
       updateDeckVisual();
       updateDrawStatus();
       updateAllDropdowns();
       computeEntropyAndMaybeMnemonic();
+    }
+
+    // 收集交互数据的辅助函数
+    function addInteractionData(type, data) {
+      const timestamp = performance.now();
+      interactionData.timestamps.push(timestamp);
+      
+      if (type === 'mouse') {
+        interactionData.mouseMovements.push({
+          x: data.x,
+          y: data.y,
+          timestamp: timestamp
+        });
+        if (interactionData.mouseMovements.length > MAX_INTERACTION_DATA) {
+          interactionData.mouseMovements.shift();
+        }
+      } else if (type === 'click') {
+        interactionData.clickPositions.push({
+          x: data.x,
+          y: data.y,
+          timestamp: timestamp
+        });
+        if (interactionData.clickPositions.length > MAX_INTERACTION_DATA) {
+          interactionData.clickPositions.shift();
+        }
+      } else if (type === 'scroll') {
+        interactionData.scrollPositions.push({
+          x: data.x,
+          y: data.y,
+          timestamp: timestamp
+        });
+        if (interactionData.scrollPositions.length > MAX_INTERACTION_DATA) {
+          interactionData.scrollPositions.shift();
+        }
+      } else if (type === 'key') {
+        interactionData.keyPresses.push({
+          key: data.key,
+          code: data.code,
+          timestamp: timestamp
+        });
+        if (interactionData.keyPresses.length > MAX_INTERACTION_DATA) {
+          interactionData.keyPresses.shift();
+        }
+      }
+      
+      if (interactionData.timestamps.length > MAX_INTERACTION_DATA) {
+        interactionData.timestamps.shift();
+      }
+    }
+    
+    // 将交互数据转换为熵比特
+    function interactionDataToBits() {
+      let bits = "";
+      
+      // 使用鼠标移动数据
+      if (interactionData.mouseMovements.length > 0) {
+        const lastMouse = interactionData.mouseMovements[interactionData.mouseMovements.length - 1];
+        bits += (lastMouse.x & 0xFF).toString(2).padStart(8, "0");
+        bits += (lastMouse.y & 0xFF).toString(2).padStart(8, "0");
+        // 使用时间戳的低位字节
+        const tsLow = Math.floor(lastMouse.timestamp) & 0xFF;
+        bits += tsLow.toString(2).padStart(8, "0");
+      }
+      
+      // 使用点击位置数据
+      if (interactionData.clickPositions.length > 0) {
+        const lastClick = interactionData.clickPositions[interactionData.clickPositions.length - 1];
+        bits += (lastClick.x & 0xFF).toString(2).padStart(8, "0");
+        bits += (lastClick.y & 0xFF).toString(2).padStart(8, "0");
+      }
+      
+      // 使用滚动位置数据
+      if (interactionData.scrollPositions.length > 0) {
+        const lastScroll = interactionData.scrollPositions[interactionData.scrollPositions.length - 1];
+        bits += (lastScroll.x & 0xFFFF).toString(2).padStart(16, "0").slice(-8);
+        bits += (lastScroll.y & 0xFFFF).toString(2).padStart(16, "0").slice(-8);
+      }
+      
+      // 使用按键数据
+      if (interactionData.keyPresses.length > 0) {
+        const lastKey = interactionData.keyPresses[interactionData.keyPresses.length - 1];
+        if (lastKey.code) {
+          const codeHash = lastKey.code.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          bits += (codeHash & 0xFF).toString(2).padStart(8, "0");
+        }
+      }
+      
+      // 使用时间戳数据（取多个时间戳的低位字节）
+      if (interactionData.timestamps.length > 0) {
+        const count = Math.min(interactionData.timestamps.length, 4);
+        for (let i = 0; i < count; i++) {
+          const ts = interactionData.timestamps[interactionData.timestamps.length - 1 - i];
+          const tsLow = Math.floor(ts) & 0xFF;
+          bits += tsLow.toString(2).padStart(8, "0");
+        }
+      }
+      
+      return bits;
     }
 
     function computeEntropyAndMaybeMnemonic() {
@@ -1579,11 +1722,55 @@
 
       const bitsPerCard = 6;
       let bitString = "";
+      
+      // 1. 基础熵：扑克牌ID
       for (let i = 0; i < TOTAL_NEED_CARDS; i++) {
         const card = slotCards[i];
         const index = card.id;
         const bits = index.toString(2).padStart(bitsPerCard, "0");
         bitString += bits;
+      }
+      
+      // 2. 增强熵：每张牌的时间戳
+      for (let i = 0; i < TOTAL_NEED_CARDS; i++) {
+        const card = slotCards[i];
+        if (card.timestamp !== undefined) {
+          // 使用高精度时间戳的低位字节（取最后8位）
+          const tsLow = Math.floor(card.timestamp) & 0xFF;
+          bitString += tsLow.toString(2).padStart(8, "0");
+          // 使用高精度时间戳的小数部分（如果有）
+          const tsFrac = card.timestamp - Math.floor(card.timestamp);
+          if (tsFrac > 0) {
+            const fracStr = tsFrac.toString().substring(2, 6); // 取小数部分的前4位
+            if (fracStr.length >= 4) {
+              bitString += fracStr.substring(0, 4);
+            }
+          }
+          // 使用标准时间戳的最后几位
+          if (card.timestampMs !== undefined) {
+            const msBits = (card.timestampMs & 0xFF).toString(2).padStart(8, "0");
+            bitString += msBits.slice(-4); // 只取最后4位
+          }
+        }
+      }
+      
+      // 3. 增强熵：用户交互数据
+      const interactionBits = interactionDataToBits();
+      bitString += interactionBits;
+      
+      // 4. 如果比特数不足，使用额外的随机数据填充
+      if (bitString.length < 128) {
+        const cryptoObj = window.crypto || window.msCrypto;
+        if (cryptoObj && cryptoObj.getRandomValues) {
+          const needed = 128 - bitString.length;
+          const randomBytes = new Uint8Array(Math.ceil(needed / 8));
+          cryptoObj.getRandomValues(randomBytes);
+          for (let i = 0; i < needed; i++) {
+            const byteIdx = Math.floor(i / 8);
+            const bitIdx = i % 8;
+            bitString += ((randomBytes[byteIdx] >> (7 - bitIdx)) & 1).toString();
+          }
+        }
       }
 
       if (bitString.length < 128) {
@@ -1592,32 +1779,83 @@
         return;
       }
 
-      const entropyBits = bitString.slice(0, 128);
-      const entropyBytes = new Uint8Array(16);
-      for (let i = 0; i < 16; i++) {
-        const byteBits = entropyBits.slice(i * 8, i * 8 + 8);
-        entropyBytes[i] = parseInt(byteBits, 2);
-      }
-      let entropyHex = "";
+      // 使用SHA256混合所有熵源，确保均匀分布
+      const entropyBits = bitString.slice(0, 256); // 取更多比特用于SHA256输入
+      const entropyBytes = new Uint8Array(Math.ceil(entropyBits.length / 8));
       for (let i = 0; i < entropyBytes.length; i++) {
-        entropyHex += entropyBytes[i].toString(16).padStart(2, "0");
+        const byteBits = entropyBits.slice(i * 8, i * 8 + 8);
+        if (byteBits.length === 8) {
+          entropyBytes[i] = parseInt(byteBits, 2);
+        }
       }
-
+      
+      // 如果支持crypto.subtle，使用SHA256进一步混合熵
+      if (hasSubtleCrypto && entropyBytes.length >= 16) {
+        // 先显示临时熵值
+        let tempEntropyHex = "";
+        for (let i = 0; i < 16; i++) {
+          tempEntropyHex += entropyBytes[i].toString(16).padStart(2, "0");
+        }
+        entropyBox.textContent = tempEntropyHex + " (正在混合熵源...)";
+        
+        // 使用SHA256混合熵源
+        window.crypto.subtle.digest("SHA-256", entropyBytes.buffer)
+          .then(digestBuffer => {
+            const hashBytes = new Uint8Array(digestBuffer);
+            // 使用哈希的前128位作为最终熵
+            const finalEntropyBytes = hashBytes.slice(0, 16);
+            let entropyHex = "";
+            for (let i = 0; i < finalEntropyBytes.length; i++) {
+              entropyHex += finalEntropyBytes[i].toString(16).padStart(2, "0");
+            }
+            entropyBox.textContent = entropyHex;
+            generateMnemonic(finalEntropyBytes);
+          })
+          .catch(err => {
+            console.error(err);
+            // 如果SHA256失败，使用原始熵
+            let entropyHex = "";
+            for (let i = 0; i < 16; i++) {
+              entropyHex += entropyBytes[i].toString(16).padStart(2, "0");
+            }
+            entropyBox.textContent = entropyHex;
+            generateMnemonic(entropyBytes.slice(0, 16));
+          });
+        return;
+      }
+      
+      // 如果不支持crypto.subtle，直接使用前128位
+      const finalEntropyBytes = entropyBytes.slice(0, 16);
+      let entropyHex = "";
+      for (let i = 0; i < finalEntropyBytes.length; i++) {
+        entropyHex += finalEntropyBytes[i].toString(16).padStart(2, "0");
+      }
       entropyBox.textContent = entropyHex;
-
+      
       if (!hasSubtleCrypto) {
         mnemonicBox.textContent = "浏览器不支持 crypto.subtle . 无法在本地计算 SHA256 . 你可以将上面的 Entropy 拷贝到其他离线 BIP39 工具中生成助记词";
         return;
       }
-
+      
+      generateMnemonic(finalEntropyBytes);
+    }
+    
+    function generateMnemonic(entropyBytes) {
       mnemonicBox.textContent = "正在本地计算助记词 . 请稍候";
-
+      
       window.crypto.subtle.digest("SHA-256", entropyBytes.buffer)
         .then(digestBuffer => {
           const hashBytes = new Uint8Array(digestBuffer);
           const firstByteBits = hashBytes[0].toString(2).padStart(8, "0");
           const checksumBits = firstByteBits.slice(0, 4);
+          
+          // 将熵转换为132位（128位熵 + 4位校验和）
+          let entropyBits = "";
+          for (let i = 0; i < entropyBytes.length; i++) {
+            entropyBits += entropyBytes[i].toString(2).padStart(8, "0");
+          }
           const fullBits = entropyBits + checksumBits;
+          
           const words = [];
           for (let i = 0; i < 12; i++) {
             const segment = fullBits.slice(i * 11, i * 11 + 11);
@@ -1631,6 +1869,43 @@
           console.error(err);
           mnemonicBox.textContent = "计算 SHA256 时出错 . 无法生成助记词 . 请尝试刷新页面或使用其他浏览器";
         });
+    }
+    
+    // 设置交互数据收集的事件监听器
+    function setupInteractionListeners() {
+      // 鼠标移动事件（节流，避免过于频繁）
+      let mouseMoveThrottle = 0;
+      document.addEventListener("mousemove", (e) => {
+        mouseMoveThrottle++;
+        if (mouseMoveThrottle % 5 === 0) { // 每5次记录一次
+          addInteractionData('mouse', { x: e.clientX, y: e.clientY });
+        }
+      });
+      
+      // 点击事件
+      document.addEventListener("click", (e) => {
+        addInteractionData('click', { x: e.clientX, y: e.clientY });
+      });
+      
+      // 滚动事件（节流）
+      let scrollThrottle = 0;
+      document.addEventListener("scroll", () => {
+        scrollThrottle++;
+        if (scrollThrottle % 3 === 0) { // 每3次记录一次
+          addInteractionData('scroll', { 
+            x: window.scrollX || window.pageXOffset, 
+            y: window.scrollY || window.pageYOffset 
+          });
+        }
+      }, { passive: true });
+      
+      // 键盘事件（只记录非功能键）
+      document.addEventListener("keydown", (e) => {
+        // 忽略Tab、Shift、Ctrl、Alt等功能键
+        if (!['Tab', 'Shift', 'Control', 'Alt', 'Meta', 'Escape', 'Enter'].includes(e.key)) {
+          addInteractionData('key', { key: e.key, code: e.code });
+        }
+      });
     }
 
     function setupCryptoStatus() {
@@ -1650,6 +1925,7 @@
       initSlots();
       resetDeck();
       setupCryptoStatus();
+      setupInteractionListeners(); // 设置交互数据收集
       updateDeckVisual();
       // Automatically shuffle on page load for randomization
       doShuffleWithAnimation();
